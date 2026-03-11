@@ -127,7 +127,7 @@ export const translations = {
     order_no: '订单号',
     
     // Footer
-    footer_desc: '英英是一家专注服务在英华人的综合服务平台，提供酒店住宿、租房代办、中文导游和游学接待服务。',
+    footer_desc: 'Watu 是专注服务在英华人的综合服务平台，提供酒店住宿、租房代办、中文导游和游学接待服务。',
     footer_services: '服务项目',
     footer_company: '关于公司',
     footer_about: '关于我们',
@@ -135,7 +135,7 @@ export const translations = {
     footer_faq: '常见问题',
     footer_contact: '联系我们',
     footer_follow: '关注我们',
-    footer_copyright: '© 2026 英英 YingYing UK. 版权所有',
+    footer_copyright: '© 2026 Watu · 英国中文住宿伙伴. 版权所有',
     
     // Inquiry form
     inquiry_title: '在线咨询',
@@ -276,7 +276,7 @@ export const translations = {
     order_no: 'Order No.',
     
     // Footer
-    footer_desc: 'YingYing is a comprehensive services platform dedicated to serving the Chinese community in the UK, offering hotel accommodation, rental agency, Mandarin-speaking guides and study tours.',
+    footer_desc: 'Watu is a comprehensive services platform dedicated to serving the Chinese community in the UK, offering hotel accommodation, rental agency, Mandarin-speaking guides and study tours.',
     footer_services: 'Services',
     footer_company: 'Company',
     footer_about: 'About Us',
@@ -284,7 +284,7 @@ export const translations = {
     footer_faq: 'FAQ',
     footer_contact: 'Contact',
     footer_follow: 'Follow Us',
-    footer_copyright: '© 2026 YingYing UK. All rights reserved.',
+    footer_copyright: '© 2026 Watu · UK Chinese Travel Partner. All rights reserved.',
     
     // Inquiry form
     inquiry_title: 'Online Enquiry',

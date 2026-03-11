@@ -22,8 +22,8 @@ export function getLayout(lang: Lang, title: string, content: string, currentPat
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${title} - ${lang === 'zh' ? '英英 英国华人服务平台' : 'YingYing UK Chinese Services'}</title>
-  <meta name="description" content="${lang === 'zh' ? '英英 - 专为华人打造的英国服务平台，提供酒店预订、租房代办、中文导游、游学接待服务' : 'YingYing UK - Premium services for the Chinese community, offering hotels, rentals, Mandarin guides and study tours'}">
+  <title>${title} - ${lang === 'zh' ? 'Watu · 英国中文住宿伙伴' : 'Watu · UK Chinese Travel Partner'}</title>
+  <meta name="description" content="${lang === 'zh' ? 'Watu - 英国中文住宿伙伴，学旅安心之选。提供酒店预订、租房代办、中文导游、游学接待服务' : 'Watu - Your UK Chinese accommodation partner, the trusted choice for study and travel. Hotels, rentals, Mandarin guides and study tours.'}">  
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -62,13 +62,10 @@ export function getLayout(lang: Lang, title: string, content: string, currentPat
   <div class="max-w-7xl mx-auto px-4 sm:px-6">
     <div class="flex items-center justify-between h-16">
       <!-- Logo -->
-      <a href="/" class="flex items-center space-x-2 flex-shrink-0">
-        <div class="w-9 h-9 gradient-bg rounded-xl flex items-center justify-center">
-          <span class="text-white font-bold text-lg">英</span>
-        </div>
-        <div>
-          <div class="font-bold text-gray-900 text-lg leading-none">英英</div>
-          <div class="text-xs text-gray-500 leading-none">YingYing UK</div>
+      <a href="/?lang=${lang}" class="flex items-center flex-shrink-0">
+        <img src="/static/watu-logo.png" alt="Watu" class="h-8 w-auto">
+        <div class="ml-2 hidden sm:block">
+          <div class="text-xs text-gray-400 leading-none whitespace-nowrap">${lang === 'zh' ? '英国中文住宿伙伴 | 学旅安心之选' : 'UK Chinese Travel Partner'}</div>
         </div>
       </a>
       
@@ -133,14 +130,8 @@ export function getLayout(lang: Lang, title: string, content: string, currentPat
     <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
       <!-- Brand -->
       <div class="md:col-span-1">
-        <div class="flex items-center space-x-2 mb-4">
-          <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
-            <span class="text-white font-bold text-xl">英</span>
-          </div>
-          <div>
-            <div class="font-bold text-white text-xl leading-none">英英</div>
-            <div class="text-xs text-white/70 leading-none">YingYing UK</div>
-          </div>
+        <div class="flex items-center mb-4">
+          <img src="/static/watu-logo.png" alt="Watu" class="h-8 w-auto" style="filter: brightness(0) invert(1);">
         </div>
         <p class="text-white/70 text-sm leading-relaxed mb-4">${T('footer_desc')}</p>
         <div class="flex space-x-3">
@@ -183,7 +174,7 @@ export function getLayout(lang: Lang, title: string, content: string, currentPat
         <ul class="space-y-2 text-sm text-white/70">
           <li class="flex items-center space-x-2">
             <i class="fas fa-envelope w-4"></i>
-            <span>hello@yingying.uk</span>
+            <span>hello@watu.uk</span>
           </li>
           <li class="flex items-center space-x-2">
             <i class="fas fa-phone w-4"></i>
@@ -191,7 +182,7 @@ export function getLayout(lang: Lang, title: string, content: string, currentPat
           </li>
           <li class="flex items-center space-x-2">
             <i class="fab fa-weixin w-4"></i>
-            <span>YingYingUK</span>
+            <span>WatuUK</span>
           </li>
           <li class="flex items-center space-x-2">
             <i class="fas fa-map-marker-alt w-4"></i>

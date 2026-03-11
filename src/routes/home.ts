@@ -38,8 +38,8 @@ homeRoute.get('/', async (c) => {
 
   const content = `
   <!-- Hero Section -->
-  <section class="relative min-h-screen flex items-center" style="background: linear-gradient(135deg, rgba(30,58,95,0.92) 0%, rgba(45,106,159,0.85) 100%), url('https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=1600') center/cover no-repeat;">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 w-full py-20">
+  <section class="relative flex items-center" style="min-height:540px; background: linear-gradient(135deg, rgba(30,58,95,0.92) 0%, rgba(45,106,159,0.85) 100%), url('https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=1600') center/cover no-repeat;">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 w-full py-10">
       <div class="max-w-3xl fade-in">
         <!-- Badge -->
         <div class="inline-flex items-center space-x-2 bg-amber-400/20 border border-amber-400/30 rounded-full px-4 py-1.5 mb-6">
@@ -47,8 +47,8 @@ homeRoute.get('/', async (c) => {
           <span class="text-amber-300 text-sm font-medium">${lang === 'zh' ? '专为华人打造 · 品质保证' : 'Built for Chinese Community · Quality Assured'}</span>
         </div>
         
-        <h1 class="text-4xl md:text-6xl font-bold text-white leading-tight mb-4">
-          ${lang === 'zh' ? '<span class="text-amber-400">英英</span><br>您在英国的<br>华人服务专家' : '<span class="text-amber-400">YingYing UK</span><br>Your Trusted<br>Chinese Services Expert'}
+        <h1 class="text-3xl md:text-5xl font-bold text-white leading-tight mb-4">
+          ${lang === 'zh' ? '<span class="text-amber-400">Watu</span> &mdash; 您在英国的<br>华人住宿与旅行专家' : '<span class="text-amber-400">Watu</span> &mdash; Your UK<br>Chinese Travel Partner'}
         </h1>
         <p class="text-xl text-white/80 mb-8 max-w-xl">
           ${T('hero_subtitle')}
@@ -80,30 +80,30 @@ homeRoute.get('/', async (c) => {
         </div>
         
         <!-- Stats -->
-        <div class="flex flex-wrap gap-6">
+        <div class="flex flex-wrap gap-4">
           <div class="text-center">
-            <div class="text-3xl font-bold text-amber-400">500+</div>
-            <div class="text-white/70 text-sm">${lang === 'zh' ? '精选房源' : 'Properties'}</div>
+            <div class="text-2xl font-bold text-amber-400">500+</div>
+            <div class="text-white/70 text-xs">${lang === 'zh' ? '精选房源' : 'Properties'}</div>
           </div>
           <div class="text-center">
-            <div class="text-3xl font-bold text-amber-400">50+</div>
-            <div class="text-white/70 text-sm">${lang === 'zh' ? '专业导游' : 'Expert Guides'}</div>
+            <div class="text-2xl font-bold text-amber-400">50+</div>
+            <div class="text-white/70 text-xs">${lang === 'zh' ? '专业导游' : 'Expert Guides'}</div>
           </div>
           <div class="text-center">
-            <div class="text-3xl font-bold text-amber-400">2000+</div>
-            <div class="text-white/70 text-sm">${lang === 'zh' ? '服务客户' : 'Happy Clients'}</div>
+            <div class="text-2xl font-bold text-amber-400">2000+</div>
+            <div class="text-white/70 text-xs">${lang === 'zh' ? '服务客户' : 'Happy Clients'}</div>
           </div>
           <div class="text-center">
-            <div class="text-3xl font-bold text-amber-400">4.9★</div>
-            <div class="text-white/70 text-sm">${lang === 'zh' ? '平均评分' : 'Avg Rating'}</div>
+            <div class="text-2xl font-bold text-amber-400">4.9★</div>
+            <div class="text-white/70 text-xs">${lang === 'zh' ? '平均评分' : 'Avg Rating'}</div>
           </div>
         </div>
       </div>
     </div>
     
     <!-- Scroll indicator -->
-    <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-      <i class="fas fa-chevron-down text-white/60 text-xl"></i>
+    <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 animate-bounce">
+      <i class="fas fa-chevron-down text-white/60 text-lg"></i>
     </div>
   </section>
 
