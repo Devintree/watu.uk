@@ -134,8 +134,10 @@ export const translations = {
     footer_blog: '资讯博客',
     footer_faq: '常见问题',
     footer_contact: '联系我们',
+    footer_terms: '服务条款',
+    footer_privacy: '隐私政策',
     footer_follow: '关注我们',
-    footer_copyright: '© 2026 Watu · 英国中文住宿伙伴. 版权所有',
+    footer_copyright: '© 2026 Watu Technology UK Ltd. 版权所有',
     
     // Inquiry form
     inquiry_title: '在线咨询',
@@ -283,8 +285,10 @@ export const translations = {
     footer_blog: 'Blog',
     footer_faq: 'FAQ',
     footer_contact: 'Contact',
+    footer_terms: 'Terms of Service',
+    footer_privacy: 'Privacy Policy',
     footer_follow: 'Follow Us',
-    footer_copyright: '© 2026 Watu · UK Chinese Travel Partner. All rights reserved.',
+    footer_copyright: '© 2026 Watu Technology UK Ltd. All rights reserved.',
     
     // Inquiry form
     inquiry_title: 'Online Enquiry',

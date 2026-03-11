@@ -7,6 +7,8 @@ import guidesRoute from './routes/guides'
 import studyToursRoute from './routes/studyTours'
 import apiRoute from './routes/api'
 import adminRoute from './routes/admin'
+import adminApi from './routes/admin-api'
+import contentRoute from './routes/content'
 import paymentRoute from './routes/payment'
 import { getLayout } from './lib/layout'
 import { t } from './lib/i18n'
@@ -30,6 +32,8 @@ app.route('/rentals', rentalsRoute)
 app.route('/guides', guidesRoute)
 app.route('/study-tours', studyToursRoute)
 app.route('/api', apiRoute)
+app.route('/admin/api', adminApi)
+app.route('/', contentRoute)
 app.route('/admin', adminRoute)
 app.route('/payment', paymentRoute)
 

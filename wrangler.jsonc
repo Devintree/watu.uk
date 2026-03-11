@@ -9,8 +9,8 @@
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "webapp-production",
-      "database_id": "local-dev"
+      "database_name": "watu-uk-production",
+      "database_id": "8799fce0-d5a7-4f85-8580-7185a4d54f25"
     }
   ]
 }

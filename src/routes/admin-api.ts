@@ -1,0 +1,149 @@
+import { Hono } from 'hono'
+
+type Bindings = { DB: D1Database }
+const adminApi = new Hono<{ Bindings: Bindings }>()
+
+// Auth check
+adminApi.use('*', async (c, next) => {
+  const authCookie = c.req.raw.headers.get('cookie')?.match(/admin_auth=([^;]+)/)?.[1]
+  if (authCookie !== 'authenticated') {
+    return c.json({ error: 'Unauthorized' }, 401)
+  }
+  return next()
+})
+
+const ALLOWED_TABLES = ['hotels', 'rentals', 'guides', 'study_tours', 'blogs', 'pages', 'room_types', 'room_inventory']
+
+// Advanced bulk update for calendar inventory
+adminApi.post('/inventory-bulk', async (c) => {
+  try {
+    const { room_type_id, start_date, end_date, price, available_count, is_closed } = await c.req.json()
+    
+    // Generate all dates in the range
+    const dates = []
+    let curr = new Date(start_date)
+    const end = new Date(end_date)
+    while (curr <= end) {
+      dates.push(curr.toISOString().split('T')[0])
+      curr.setDate(curr.getDate() + 1)
+    }
+    
+    // Prepare batched statements using D1's UPSERT equivalent (INSERT OR REPLACE / ON CONFLICT)
+    const stmts = dates.map(date => 
+      c.env.DB.prepare(`
+        INSERT INTO room_inventory (room_type_id, date, price, available_count, is_closed) 
+        VALUES (?, ?, ?, ?, ?)
+        ON CONFLICT(room_type_id, date) DO UPDATE SET 
+          price = excluded.price, 
+          available_count = excluded.available_count, 
+          is_closed = excluded.is_closed
+      `).bind(room_type_id, date, price, available_count, is_closed)
+    )
+    
+    await c.env.DB.batch(stmts)
+    return c.json({ success: true, updated: dates.length })
+  } catch (e: any) {
+    return c.json({ error: e.message }, 500)
+  }
+})
+
+// Get inventory for a specific room and month
+adminApi.get('/inventory/:roomId', async (c) => {
+  const roomId = c.req.param('roomId')
+  const month = c.req.query('month') // Format: YYYY-MM
+  
+  if (!month) return c.json({ error: 'Month parameter is required' }, 400)
+  
+  try {
+    const result = await c.env.DB.prepare('SELECT * FROM room_inventory WHERE room_type_id = ? AND date LIKE ?').bind(roomId, `${month}%`).all()
+    return c.json(result.results || [])
+  } catch (e: any) {
+    return c.json({ error: e.message }, 500)
+  }
+})
+
+// generic CRUD endpoints below
+
+// GET all
+adminApi.get('/:table', async (c) => {
+  const table = c.req.param('table')
+  if (!ALLOWED_TABLES.includes(table)) return c.json({ error: 'Invalid table' }, 400)
+  
+  const hotelId = c.req.query('hotel_id')
+  let query = `SELECT * FROM ${table} ORDER BY created_at DESC`
+  
+  if (table === 'room_types' && hotelId) {
+    query = `SELECT * FROM room_types WHERE hotel_id = ${hotelId} ORDER BY created_at DESC`
+  } else if (table !== 'pages' && table !== 'room_types' && table !== 'room_inventory') {
+    query = `SELECT * FROM ${table} ORDER BY sort_order DESC, created_at DESC`
+  }
+  
+  const results = await c.env.DB.prepare(query).all()
+  return c.json(results.results)
+})
+
+// GET one
+adminApi.get('/:table/:id', async (c) => {
+  const table = c.req.param('table')
+  const id = c.req.param('id')
+  if (!ALLOWED_TABLES.includes(table)) return c.json({ error: 'Invalid table' }, 400)
+  const result = await c.env.DB.prepare(`SELECT * FROM ${table} WHERE id = ?`).bind(id).first()
+  return c.json(result)
+})
+
+// POST create
+adminApi.post('/:table', async (c) => {
+  const table = c.req.param('table')
+  if (!ALLOWED_TABLES.includes(table)) return c.json({ error: 'Invalid table' }, 400)
+  
+  const body = await c.req.json()
+  const keys = Object.keys(body)
+  const values = Object.values(body)
+  
+  const placeholders = keys.map(() => '?').join(', ')
+  const query = `INSERT INTO ${table} (${keys.join(', ')}) VALUES (${placeholders})`
+  
+  try {
+    const res = await c.env.DB.prepare(query).bind(...values).run()
+    return c.json({ success: true, id: res.meta.last_row_id })
+  } catch (e: any) {
+    return c.json({ error: e.message }, 500)
+  }
+})
+
+// PUT update
+adminApi.put('/:table/:id', async (c) => {
+  const table = c.req.param('table')
+  const id = c.req.param('id')
+  if (!ALLOWED_TABLES.includes(table)) return c.json({ error: 'Invalid table' }, 400)
+  
+  const body = await c.req.json()
+  const keys = Object.keys(body)
+  const values = Object.values(body)
+  
+  const setString = keys.map(k => `${k} = ?`).join(', ')
+  const query = `UPDATE ${table} SET ${setString} WHERE id = ?`
+  
+  try {
+    await c.env.DB.prepare(query).bind(...values, id).run()
+    return c.json({ success: true })
+  } catch (e: any) {
+    return c.json({ error: e.message }, 500)
+  }
+})
+
+// DELETE
+adminApi.delete('/:table/:id', async (c) => {
+  const table = c.req.param('table')
+  const id = c.req.param('id')
+  if (!ALLOWED_TABLES.includes(table)) return c.json({ error: 'Invalid table' }, 400)
+  
+  try {
+    await c.env.DB.prepare(`DELETE FROM ${table} WHERE id = ?`).bind(id).run()
+    return c.json({ success: true })
+  } catch (e: any) {
+    return c.json({ error: e.message }, 500)
+  }
+})
+
+export default adminApi

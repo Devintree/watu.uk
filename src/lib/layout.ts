@@ -162,38 +162,45 @@ export function getLayout(lang: Lang, title: string, content: string, currentPat
       <div>
         <h4 class="font-semibold text-white mb-3">${T('footer_company')}</h4>
         <ul class="space-y-2 text-sm text-white/70">
-          <li><a href="/about?lang=${lang}" class="hover:text-white transition-colors">${T('footer_about')}</a></li>
-          <li><a href="/faq?lang=${lang}" class="hover:text-white transition-colors">${T('footer_faq')}</a></li>
-          <li><a href="/contact?lang=${lang}" class="hover:text-white transition-colors">${T('footer_contact')}</a></li>
+          <li><a href="/page/about?lang=${lang}" class="hover:text-white transition-colors">${T('footer_about')}</a></li>
+          <li><a href="/blogs?lang=${lang}" class="hover:text-white transition-colors">${T('footer_blog')}</a></li>
+          <li><a href="/page/faq?lang=${lang}" class="hover:text-white transition-colors">${T('footer_faq')}</a></li>
+          <li><a href="/page/terms?lang=${lang}" class="hover:text-white transition-colors">${T('footer_terms')}</a></li>
+          <li><a href="/page/privacy?lang=${lang}" class="hover:text-white transition-colors">${T('footer_privacy')}</a></li>
+          <li><a href="/page/contact?lang=${lang}" class="hover:text-white transition-colors">${T('footer_contact')}</a></li>
         </ul>
       </div>
       
       <!-- Contact -->
       <div>
         <h4 class="font-semibold text-white mb-3">${T('footer_contact')}</h4>
-        <ul class="space-y-2 text-sm text-white/70">
-          <li class="flex items-center space-x-2">
-            <i class="fas fa-envelope w-4"></i>
-            <span>hello@watu.uk</span>
+        <ul class="space-y-3 text-sm text-white/70">
+          <li class="flex items-start space-x-2">
+            <i class="fas fa-building w-4 mt-1"></i>
+            <span>Watu Technology UK Ltd</span>
+          </li>
+          <li class="flex items-start space-x-2">
+            <i class="fas fa-map-marker-alt w-4 mt-1"></i>
+            <span class="leading-relaxed">Room 2c09 South Bank Technopark,<br>90 London Road,<br>London, England, SE1 6LN</span>
           </li>
           <li class="flex items-center space-x-2">
-            <i class="fas fa-phone w-4"></i>
-            <span>+44 7700 900000</span>
+            <i class="fas fa-envelope w-4"></i>
+            <a href="mailto:info@watu.uk" class="hover:text-white transition-colors">info@watu.uk</a>
           </li>
           <li class="flex items-center space-x-2">
             <i class="fab fa-weixin w-4"></i>
             <span>WatuUK</span>
           </li>
-          <li class="flex items-center space-x-2">
-            <i class="fas fa-map-marker-alt w-4"></i>
-            <span>London, UK</span>
-          </li>
         </ul>
       </div>
     </div>
     
-    <div class="border-t border-white/20 mt-8 pt-8 text-center text-sm text-white/50">
-      ${T('footer_copyright')}
+    <div class="border-t border-white/20 mt-8 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-white/50">
+      <div>${T('footer_copyright')}</div>
+      <div class="flex items-center space-x-3">
+        <span class="text-xs opacity-70">${lang === 'zh' ? '支持的安全支付方式：' : 'Secure payments by:'}</span>
+        <img src="https://themes.getmotopress.com/booklium-default/wp-content/uploads/sites/29/2019/11/cards.svg" alt="Payment Methods" class="h-6 w-auto opacity-90 hover:opacity-100 transition-opacity">
+      </div>
     </div>
   </div>
 </footer>
