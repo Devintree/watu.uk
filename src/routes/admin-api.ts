@@ -111,6 +111,13 @@ adminApi.post('/:table', async (c) => {
   if (!ALLOWED_TABLES.includes(table)) return c.json({ error: 'Invalid table' }, 400)
   
   const body = await c.req.json()
+  
+  let ctripReview = '';
+  if (body.ctrip_review_content) {
+    ctripReview = body.ctrip_review_content;
+    delete body.ctrip_review_content;
+  }
+  
   const keys = Object.keys(body)
   const values = Object.values(body)
   
@@ -119,6 +126,13 @@ adminApi.post('/:table', async (c) => {
   
   try {
     const res = await c.env.DB.prepare(query).bind(...values).run()
+    
+    if (table === 'hotels' && ctripReview) {
+      await c.env.DB.prepare(
+        'INSERT INTO reviews (service_type, service_id, reviewer_name, rating, comment_zh, comment_en, is_approved) VALUES (?, ?, ?, ?, ?, ?, ?)'
+      ).bind('hotel', res.meta.last_row_id, 'Ctrip Guest', body.rating || 5, ctripReview, '', 1).run()
+    }
+    
     return c.json({ success: true, id: res.meta.last_row_id })
   } catch (e: any) {
     return c.json({ error: e.message }, 500)
@@ -132,6 +146,13 @@ adminApi.put('/:table/:id', async (c) => {
   if (!ALLOWED_TABLES.includes(table)) return c.json({ error: 'Invalid table' }, 400)
   
   const body = await c.req.json()
+  
+  let ctripReview = '';
+  if (body.ctrip_review_content) {
+    ctripReview = body.ctrip_review_content;
+    delete body.ctrip_review_content;
+  }
+  
   const keys = Object.keys(body)
   const values = Object.values(body)
   
@@ -140,6 +161,17 @@ adminApi.put('/:table/:id', async (c) => {
   
   try {
     await c.env.DB.prepare(query).bind(...values, id).run()
+    
+    if (table === 'hotels' && ctripReview) {
+      // Check if a review already exists
+      const existing = await c.env.DB.prepare('SELECT id FROM reviews WHERE service_type = ? AND service_id = ? AND reviewer_name = ?').bind('hotel', id, 'Ctrip Guest').first();
+      if (!existing) {
+        await c.env.DB.prepare(
+          'INSERT INTO reviews (service_type, service_id, reviewer_name, rating, comment_zh, comment_en, is_approved) VALUES (?, ?, ?, ?, ?, ?, ?)'
+        ).bind('hotel', id, 'Ctrip Guest', body.rating || 5, ctripReview, '', 1).run()
+      }
+    }
+    
     return c.json({ success: true })
   } catch (e: any) {
     return c.json({ error: e.message }, 500)

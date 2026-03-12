@@ -201,7 +201,7 @@ export const hotelEditTemplate = (id: string) => `
           title_zh: '', title_en: '', star_rating: 4, opening_year: '', room_count: '', ctrip_id: '',
           phone: '', email: '', city: 'london', address: '', latitude: '', longitude: '',
           cover_image: '', images: '[]', description_zh: '', description_en: '',
-          policies_zh: '', policies_en: '', amenities_zh: '', amenities_en: '', is_available: 1, price_per_night: 0
+          policies_zh: '', policies_en: '', amenities_zh: '', amenities_en: '', is_available: 1, price_per_night: 0, rating: 0, review_count: 0, ctrip_review_content: ''
         },
         qDescZh: null, qDescEn: null, qPolZh: null, qPolEn: null
       }
@@ -280,6 +280,16 @@ export const hotelEditTemplate = (id: string) => `
               this.form.cover_image = d.media.images[0];
               this.form.images = JSON.stringify(d.media.images);
             }
+            
+            if (d.reviews && d.reviews.score) {
+              this.form.rating = parseFloat(d.reviews.score) || 0;
+              this.form.review_count = parseInt(d.reviews.review_count) || 0;
+              
+              if (d.reviews.content) {
+                this.form.ctrip_review_content = d.reviews.content;
+              }
+            }
+
             alert('导入成功，请检查各项数据后保存。');
           } else {
             alert('未能获取到有效数据');
