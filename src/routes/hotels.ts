@@ -197,9 +197,10 @@ hotelsRoute.get('/:id', async (c) => {
   <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
       
+      
       <!-- Left: Details -->
       <div class="lg:col-span-2">
-        <!-- Title & Rating & Info -->
+        <!-- Title & Info -->
         <div class="mb-4 mt-2">
           <div class="flex items-start justify-between mb-2">
             <h1 class="text-2xl md:text-3xl font-bold text-gray-900">
@@ -208,31 +209,27 @@ hotelsRoute.get('/:id', async (c) => {
             </h1>
             ${cityBadge(hotel.city, lang)}
           </div>
-          <div class="flex flex-wrap items-center gap-3 text-gray-600 text-sm mb-4">
+          <div class="flex items-center text-gray-600 text-sm mb-4">
             ${hotel.address ? `<span class="flex items-center"><i class="fas fa-map-marker-alt text-blue-400 mr-1"></i>${hotel.address}</span>` : ''}
-            ${hotel.phone ? `<span>·</span><span class="flex items-center"><i class="fas fa-phone-alt text-gray-400 mr-1"></i>${hotel.phone}</span>` : ''}
-            ${hotel.email ? `<span>·</span><span class="flex items-center"><i class="fas fa-envelope text-gray-400 mr-1"></i><a href="mailto:${hotel.email}" class="hover:text-blue-600">${hotel.email}</a></span>` : ''}
-            ${hotel.opening_year ? `<span>·</span><span>${lang==='zh'?'开业:':'Opened:'} ${hotel.opening_year}</span>` : ''}
-            ${hotel.room_count ? `<span>·</span><span>${lang==='zh'?'客房数:':'Rooms:'} ${hotel.room_count}</span>` : ''}
           </div>
         </div>
 
-        <!-- Image Gallery -->
+        <!-- Image Gallery (h-52 is ~30% smaller than h-72) -->
         <div class="relative mb-6">
-          <div class="grid grid-cols-3 gap-2 h-72">
-            <div class="col-span-2 rounded-2xl overflow-hidden">
-              <img id="mainImg" src="${images[0] || 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800'}" 
-                   class="w-full h-full object-cover" alt="main">
+          <div class="grid grid-cols-3 gap-2 h-52">
+            <div class="col-span-2 rounded-2xl overflow-hidden cursor-pointer" onclick="openLightbox(0)">
+              <img src="${images[0] || 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800'}" 
+                   class="w-full h-full object-cover hover:scale-105 transition-transform duration-300" alt="main">
             </div>
             <div class="flex flex-col gap-2">
               ${images.slice(1, 3).map((img: string, i: number) => `
-                <div class="flex-1 rounded-xl overflow-hidden cursor-pointer" onclick="changeMainImg('${img}')">
-                  <img src="${img}" class="w-full h-full object-cover hover:scale-105 transition-transform" alt="img${i}">
+                <div class="flex-1 rounded-xl overflow-hidden cursor-pointer" onclick="openLightbox(${i+1})">
+                  <img src="${img}" class="w-full h-full object-cover hover:scale-105 transition-transform duration-300" alt="img${i}">
                 </div>
               `).join('')}
               ${images.length > 3 ? `
-                <div class="flex-1 rounded-xl overflow-hidden relative cursor-pointer" onclick="changeMainImg('${images[3]}')">
-                  <img src="${images[3]}" class="w-full h-full object-cover" alt="more">
+                <div class="flex-1 rounded-xl overflow-hidden relative cursor-pointer" onclick="openLightbox(3)">
+                  <img src="${images[3]}" class="w-full h-full object-cover hover:scale-105 transition-transform duration-300" alt="more">
                   <div class="absolute inset-0 bg-black/40 flex items-center justify-center text-white font-bold text-lg">
                     +${images.length - 3}
                   </div>
@@ -241,16 +238,6 @@ hotelsRoute.get('/:id', async (c) => {
             </div>
           </div>
         </div>
-
-        <!-- Description -->
-        ${(lang === 'zh' ? hotel.description_zh : hotel.description_en) ? `
-        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-6">
-          <h2 class="text-lg font-bold text-gray-900 mb-3">${lang === 'zh' ? '房源介绍' : 'About This Property'}</h2>
-          <div class="prose max-w-none text-gray-600 leading-relaxed text-sm md:text-base">
-            ${lang === 'zh' ? hotel.description_zh : hotel.description_en}
-          </div>
-        </div>
-        ` : ''}
 
         <!-- Room Types -->
         ${hotel.rooms && hotel.rooms.length > 0 ? `
@@ -263,7 +250,7 @@ hotelsRoute.get('/:id', async (c) => {
               return `
               <div class="flex flex-col md:flex-row border border-gray-100 rounded-xl overflow-hidden hover:shadow-md transition-shadow">
                 ${rtImages[0] ? `
-                  <div class="md:w-1/3 h-40 md:h-auto">
+                  <div class="md:w-1/3 h-40 md:h-auto cursor-pointer" onclick="openRoomImg('${rtImages[0]}')">
                     <img src="${rtImages[0]}" class="w-full h-full object-cover" alt="room">
                   </div>
                 ` : `<div class="md:w-1/3 h-40 md:h-auto bg-gray-50 flex items-center justify-center text-gray-300"><i class="fas fa-bed text-3xl"></i></div>`}
@@ -302,21 +289,12 @@ hotelsRoute.get('/:id', async (c) => {
         </div>
         ` : ''}
 
-        <!-- Policies -->
-        ${(lang === 'zh' ? hotel.policies_zh : hotel.policies_en) ? `
-        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-6">
-          <h2 class="text-lg font-bold text-gray-900 mb-3">${lang === 'zh' ? '住宿政策' : 'Hotel Policies'}</h2>
-          <div class="prose max-w-none text-gray-600 leading-relaxed text-sm">
-            ${lang === 'zh' ? hotel.policies_zh : hotel.policies_en}
-          </div>
-        </div>
-        ` : ''}
-
         <!-- Reviews -->
-        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-6">
           <h2 class="text-lg font-bold text-gray-900 mb-4">
             ${lang === 'zh' ? '客户评价' : 'Reviews'} 
-            <span class="text-gray-400 font-normal">(${reviews.length})</span>
+            <span class="text-gray-400 font-normal">(${reviews.length > 0 ? (hotel.review_count || reviews.length) : 0})</span>
+            ${hotel.rating ? `<span class="ml-2 text-amber-500 text-sm">${hotel.rating} / 5.0</span>` : ''}
           </h2>
           ${reviews.length > 0 ? reviews.map((r: any) => `
             <div class="border-b border-gray-100 pb-4 mb-4 last:border-0 last:mb-0 last:pb-0">
@@ -331,6 +309,83 @@ hotelsRoute.get('/:id', async (c) => {
           `).join('') : `
             <p class="text-gray-400 text-center py-4">${lang === 'zh' ? '暂无评价' : 'No reviews yet'}</p>
           `}
+        </div>
+
+        <!-- Hotel Description & Details (Placed UNDER reviews as requested) -->
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-6">
+          <h2 class="text-lg font-bold text-gray-900 mb-4">${lang === 'zh' ? '酒店介绍' : 'Hotel Details'}</h2>
+          
+          <div class="flex flex-wrap items-center gap-4 text-sm text-gray-700 bg-gray-50 p-4 rounded-xl mb-4">
+            ${hotel.phone ? `<span class="flex items-center"><i class="fas fa-phone-alt text-gray-400 mr-2"></i>${hotel.phone}</span>` : ''}
+            ${hotel.email ? `<span class="flex items-center"><i class="fas fa-envelope text-gray-400 mr-2"></i><a href="mailto:${hotel.email}" class="hover:text-blue-600">${hotel.email}</a></span>` : ''}
+            ${hotel.opening_year ? `<span class="flex items-center"><i class="fas fa-calendar-alt text-gray-400 mr-2"></i>${lang==='zh'?'开业:':'Opened:'} ${hotel.opening_year}</span>` : ''}
+            ${hotel.room_count ? `<span class="flex items-center"><i class="fas fa-door-open text-gray-400 mr-2"></i>${lang==='zh'?'客房数:':'Rooms:'} ${hotel.room_count}</span>` : ''}
+          </div>
+
+          ${(lang === 'zh' ? hotel.description_zh : hotel.description_en) ? `
+          <div class="prose max-w-none text-gray-600 leading-relaxed text-sm md:text-base">
+            ${lang === 'zh' ? hotel.description_zh : hotel.description_en}
+          </div>
+          ` : ''}
+        </div>
+
+        <!-- Policies -->
+        ${(lang === 'zh' ? hotel.policies_zh : hotel.policies_en) ? `
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-6">
+          <h2 class="text-lg font-bold text-gray-900 mb-3">${lang === 'zh' ? '住宿政策' : 'Hotel Policies'}</h2>
+          <div class="prose max-w-none text-gray-600 leading-relaxed text-sm">
+            ${lang === 'zh' ? hotel.policies_zh : hotel.policies_en}
+          </div>
+        </div>
+        ` : ''}
+
+      </div>
+
+      <!-- Lightbox functionality -->
+      <script>
+        const galleryImages = ${JSON.stringify(images)};
+        let currentImgIndex = 0;
+        
+        function openLightbox(index) {
+          if(!galleryImages || galleryImages.length === 0) return;
+          currentImgIndex = index;
+          document.getElementById('lightboxImg').src = galleryImages[currentImgIndex];
+          document.getElementById('lightbox').classList.remove('hidden');
+          document.body.style.overflow = 'hidden'; // Prevent scrolling
+        }
+        
+        function closeLightbox() {
+          document.getElementById('lightbox').classList.add('hidden');
+          document.body.style.overflow = 'auto';
+        }
+        
+        function nextImg(e) {
+          if(e) e.stopPropagation();
+          currentImgIndex = (currentImgIndex + 1) % galleryImages.length;
+          document.getElementById('lightboxImg').src = galleryImages[currentImgIndex];
+        }
+        
+        function prevImg(e) {
+          if(e) e.stopPropagation();
+          currentImgIndex = (currentImgIndex - 1 + galleryImages.length) % galleryImages.length;
+          document.getElementById('lightboxImg').src = galleryImages[currentImgIndex];
+        }
+
+        function openRoomImg(src) {
+          document.getElementById('lightboxImg').src = src;
+          document.getElementById('lightbox').classList.remove('hidden');
+          document.body.style.overflow = 'hidden';
+        }
+      </script>
+
+      <!-- Lightbox DOM -->
+      <div id="lightbox" class="fixed inset-0 bg-black/95 z-[100] hidden flex flex-col items-center justify-center" onclick="closeLightbox()">
+        <button class="absolute top-6 right-6 text-white/70 hover:text-white text-4xl p-2 z-[110]">&times;</button>
+        <button onclick="prevImg(event)" class="absolute left-4 md:left-10 text-white/70 hover:text-white text-5xl p-4 z-[110]">&lsaquo;</button>
+        <button onclick="nextImg(event)" class="absolute right-4 md:right-10 text-white/70 hover:text-white text-5xl p-4 z-[110]">&rsaquo;</button>
+        <img id="lightboxImg" onclick="event.stopPropagation()" class="max-h-[85vh] max-w-[90vw] object-contain rounded-lg shadow-2xl transition-opacity duration-300" src="" />
+        <div class="absolute bottom-6 text-white/70 text-sm" onclick="event.stopPropagation()">
+          ${lang === 'zh' ? '点击左右箭头切换，点击背景关闭' : 'Use arrows to navigate, click background to close'}
         </div>
       </div>
 
