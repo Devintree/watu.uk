@@ -62,7 +62,21 @@ adminApi.get('/inventory/:roomId', async (c) => {
   }
 })
 
+
+// Proxy for Ctrip API to bypass CORS
+adminApi.get('/proxy/ctrip/:id', async (c) => {
+  const id = c.req.param('id');
+  try {
+    const response = await fetch('https://qiansu.yztmc.cn/get_ctripinfo.php?id=' + id);
+    const data = await response.json();
+    return c.json(data);
+  } catch (e: any) {
+    return c.json({ error: e.message }, 500);
+  }
+})
+
 // generic CRUD endpoints below
+
 
 // GET all
 adminApi.get('/:table', async (c) => {

@@ -245,7 +245,7 @@ export const hotelEditTemplate = (id: string) => `
       async importCtrip() {
         if (!this.form.ctrip_id) { alert('请输入携程ID'); return; }
         try {
-          const res = await fetch('https://qiansu.yztmc.cn/get_ctripinfo.php?id=' + this.form.ctrip_id);
+          const res = await fetch('/admin/api/proxy/ctrip/' + this.form.ctrip_id);
           const json = await res.json();
           if (json && json.data) {
             const d = json.data;
