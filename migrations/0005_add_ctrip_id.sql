@@ -1,0 +1,1 @@
+ALTER TABLE hotels ADD COLUMN ctrip_id TEXT;

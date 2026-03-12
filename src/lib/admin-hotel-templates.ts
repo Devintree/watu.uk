@@ -98,7 +98,20 @@ export const hotelEditTemplate = (id: string) => `
     <!-- Section 2: Contact & Location -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
       <h3 class="font-bold text-gray-800 border-b pb-3 mb-4">位置与联系方式</h3>
+      
+      <div class="grid grid-cols-1 gap-6 mb-6">
+        <div>
+          <label class="block text-sm text-gray-700 mb-1">携程酒店ID (同步数据用)</label>
+          <div class="flex gap-2">
+            <input type="text" v-model="form.ctrip_id" class="w-1/3 border rounded-lg p-2.5 outline-none focus:ring-1 focus:ring-blue-500" placeholder="例如: 2985758">
+            <button @click="importCtrip" type="button" class="bg-blue-50 text-blue-600 px-4 py-2.5 rounded-lg hover:bg-blue-100 font-medium">
+              <i class="fas fa-cloud-download-alt mr-1"></i> 一键导入
+            </button>
+          </div>
+        </div>
+      </div>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
         <div><label class="block text-sm text-gray-700 mb-1">联系电话</label><input type="text" v-model="form.phone" class="w-full border rounded-lg p-2.5"></div>
         <div><label class="block text-sm text-gray-700 mb-1">联系电邮</label><input type="email" v-model="form.email" class="w-full border rounded-lg p-2.5"></div>
         <div>
@@ -185,7 +198,7 @@ export const hotelEditTemplate = (id: string) => `
       return {
         id: '${id}', isNew: '${id}' === 'new',
         form: {
-          title_zh: '', title_en: '', star_rating: 4, opening_year: '', room_count: '',
+          title_zh: '', title_en: '', star_rating: 4, opening_year: '', room_count: '', ctrip_id: '',
           phone: '', email: '', city: 'london', address: '', latitude: '', longitude: '',
           cover_image: '', images: '[]', description_zh: '', description_en: '',
           policies_zh: '', policies_en: '', amenities_zh: '', amenities_en: '', is_available: 1, price_per_night: 0
@@ -227,6 +240,53 @@ export const hotelEditTemplate = (id: string) => `
         const url = '/admin/api/hotels' + (this.isNew ? '' : '/' + this.id);
         const res = await fetch(url, { method: this.isNew ? 'POST' : 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(this.form) });
         if(res.ok) { alert('保存成功'); window.location.href='/admin/hotels'; } else alert('保存失败');
+      },
+      
+      async importCtrip() {
+        if (!this.form.ctrip_id) { alert('请输入携程ID'); return; }
+        try {
+          const res = await fetch('https://qiansu.yztmc.cn/get_ctripinfo.php?id=' + this.form.ctrip_id);
+          const json = await res.json();
+          if (json && json.data) {
+            const d = json.data;
+            if (d.hotel_name) this.form.title_zh = d.hotel_name;
+            if (d.star_level) this.form.star_rating = parseInt(d.star_level);
+            if (d.open_year) this.form.opening_year = d.open_year;
+            if (d.room_total) this.form.room_count = parseInt(d.room_total);
+            if (d.phone) this.form.phone = d.phone;
+            
+            // map city
+            if (d.city_name) {
+              const cn = d.city_name;
+              if (cn.includes('伦敦')) this.form.city = 'london';
+              else if (cn.includes('牛津')) this.form.city = 'oxford';
+              else if (cn.includes('剑桥')) this.form.city = 'cambridge';
+              else if (cn.includes('爱丁堡')) this.form.city = 'edinburgh';
+              else if (cn.includes('曼彻斯特')) this.form.city = 'manchester';
+            }
+            if (d.address) this.form.address = d.address;
+            
+            if (d.coordinates) {
+              if (d.coordinates.lat) this.form.latitude = d.coordinates.lat;
+              if (d.coordinates.lng) this.form.longitude = d.coordinates.lng;
+            }
+            
+            if (d.description) {
+              this.form.description_zh = '<p>' + d.description + '</p>';
+              if (this.qDescZh) this.qDescZh.root.innerHTML = this.form.description_zh;
+            }
+            
+            if (d.media && d.media.images && d.media.images.length > 0) {
+              this.form.cover_image = d.media.images[0];
+              this.form.images = JSON.stringify(d.media.images);
+            }
+            alert('导入成功，请检查各项数据后保存。');
+          } else {
+            alert('未能获取到有效数据');
+          }
+        } catch(e) {
+          alert('导入失败: ' + e.message);
+        }
       },
       compressImage(file, callback) {
         const reader = new FileReader();
