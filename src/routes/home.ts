@@ -18,9 +18,19 @@ homeRoute.get('/', async (c) => {
   let featuredStudyTours: any[] = []
   
   try {
-    const hotelsResult = await c.env.DB.prepare(
-      'SELECT * FROM hotels WHERE is_available = 1 ORDER BY rating DESC LIMIT 3'
-    ).all()
+    const today = new Date().toISOString().split('T')[0];
+    const hotelsResult = await c.env.DB.prepare(`
+      SELECT 
+        h.*,
+        COALESCE(
+          (SELECT MIN(ri.price) FROM room_inventory ri JOIN room_types rt ON ri.room_type_id = rt.id WHERE rt.hotel_id = h.id AND ri.date = ? AND ri.is_closed = 0 AND ri.available_count > 0),
+          (SELECT MIN(base_price) FROM room_types WHERE hotel_id = h.id AND is_active = 1),
+          h.price_per_night
+        ) as dynamic_price
+      FROM hotels h 
+      WHERE h.is_available = 1 
+      ORDER BY h.is_featured DESC, h.sort_order DESC, h.rating DESC LIMIT 3
+    `).bind(today).all()
     featuredHotels = hotelsResult.results || []
     
     const guidesResult = await c.env.DB.prepare(
@@ -200,7 +210,7 @@ homeRoute.get('/', async (c) => {
                 ${cityBadge(hotel.city, lang)}
               </div>
               <div class="absolute top-3 right-3 bg-white/90 rounded-full px-2 py-1 text-xs font-semibold text-blue-700">
-                £${hotel.price_per_night}/${T('per_night')}
+                £${hotel.dynamic_price}/${T('per_night')}
               </div>
             </div>
             <div class="p-5">
@@ -213,7 +223,7 @@ homeRoute.get('/', async (c) => {
                 ${amenities.slice(0, 3).map((a: string) => `<span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">${a}</span>`).join('')}
               </div>
               <div class="flex items-center justify-between">
-                <span class="font-bold text-blue-700">£${hotel.price_per_night}<span class="text-sm text-gray-500 font-normal">/${T('per_night')}</span></span>
+                <span class="font-bold text-blue-700">£${hotel.dynamic_price}<span class="text-sm text-gray-500 font-normal">/${T('per_night')}</span></span>
                 <span class="btn-primary text-white text-xs px-3 py-1.5 rounded-full font-semibold">${T('book_now')}</span>
               </div>
             </div>

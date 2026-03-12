@@ -14,12 +14,25 @@ hotelsRoute.get('/', async (c) => {
 
   let hotels: any[] = []
   try {
+    const today = new Date().toISOString().split('T')[0];
+    const baseQuery = `
+      SELECT 
+        h.*,
+        COALESCE(
+          (SELECT MIN(ri.price) FROM room_inventory ri JOIN room_types rt ON ri.room_type_id = rt.id WHERE rt.hotel_id = h.id AND ri.date = ? AND ri.is_closed = 0 AND ri.available_count > 0),
+          (SELECT MIN(base_price) FROM room_types WHERE hotel_id = h.id AND is_active = 1),
+          h.price_per_night
+        ) as dynamic_price
+      FROM hotels h 
+      WHERE h.is_available = 1
+    `;
     const query = city 
-      ? 'SELECT * FROM hotels WHERE is_available = 1 AND city = ? ORDER BY rating DESC'
-      : 'SELECT * FROM hotels WHERE is_available = 1 ORDER BY rating DESC'
+      ? baseQuery + ' AND city = ? ORDER BY h.is_featured DESC, h.sort_order DESC, h.rating DESC'
+      : baseQuery + ' ORDER BY h.is_featured DESC, h.sort_order DESC, h.rating DESC'
+    
     const result = city 
-      ? await c.env.DB.prepare(query).bind(city).all()
-      : await c.env.DB.prepare(query).all()
+      ? await c.env.DB.prepare(query).bind(today, city).all()
+      : await c.env.DB.prepare(query).bind(today).all()
     hotels = result.results || []
   } catch (e) {
     console.error('DB error:', e)
@@ -88,7 +101,7 @@ hotelsRoute.get('/', async (c) => {
               ${cityBadge(hotel.city, lang)}
             </div>
             <div class="absolute top-3 right-3 bg-white/95 rounded-full px-3 py-1 text-xs font-bold text-blue-700 shadow">
-              £${hotel.price_per_night}/${T('per_night')}
+              £${hotel.dynamic_price}/${T('per_night')}
             </div>
           </div>
           <div class="p-5">
@@ -107,7 +120,7 @@ hotelsRoute.get('/', async (c) => {
             </div>
             <div class="flex items-center justify-between pt-3 border-t border-gray-100">
               <div>
-                <span class="font-bold text-blue-700 text-lg">£${hotel.price_per_night}</span>
+                <span class="font-bold text-blue-700 text-lg">£${hotel.dynamic_price}</span>
                 <span class="text-gray-500 text-sm ml-1">/${T('per_night')}</span>
               </div>
               <a href="/hotels/${hotel.id}?lang=${lang}" class="btn-primary text-white px-5 py-2 rounded-full text-sm font-semibold shadow-sm">
@@ -140,7 +153,18 @@ hotelsRoute.get('/:id', async (c) => {
   let hotel: any = null
   let reviews: any[] = []
   try {
-    hotel = await c.env.DB.prepare('SELECT * FROM hotels WHERE id = ?').bind(id).first()
+    const today = new Date().toISOString().split('T')[0];
+    hotel = await c.env.DB.prepare(`
+      SELECT 
+        h.*,
+        COALESCE(
+          (SELECT MIN(ri.price) FROM room_inventory ri JOIN room_types rt ON ri.room_type_id = rt.id WHERE rt.hotel_id = h.id AND ri.date = ? AND ri.is_closed = 0 AND ri.available_count > 0),
+          (SELECT MIN(base_price) FROM room_types WHERE hotel_id = h.id AND is_active = 1),
+          h.price_per_night
+        ) as dynamic_price
+      FROM hotels h 
+      WHERE h.id = ?
+    `).bind(today, id).first()
     const reviewsResult = await c.env.DB.prepare(
       'SELECT * FROM reviews WHERE service_type = ? AND service_id = ? AND is_approved = 1 ORDER BY created_at DESC'
     ).bind('hotel', id).all()
@@ -262,7 +286,7 @@ hotelsRoute.get('/:id', async (c) => {
         <div class="sticky top-20">
           <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
             <div class="text-center mb-4 pb-4 border-b border-gray-100">
-              <span class="text-3xl font-bold text-blue-700">£${hotel.price_per_night}</span>
+              <span class="text-3xl font-bold text-blue-700">£${hotel.dynamic_price}</span>
               <span class="text-gray-500 ml-1">/${T('per_night')}</span>
             </div>
             
@@ -337,7 +361,7 @@ hotelsRoute.get('/:id', async (c) => {
         <input type="hidden" name="serviceId" value="${hotel.id}">
         <input type="hidden" name="serviceTitle" value="${lang === 'zh' ? hotel.title_zh : hotel.title_en}">
         <input type="hidden" name="lang" value="${lang}">
-        <input type="hidden" name="pricePerNight" value="${hotel.price_per_night}">
+        <input type="hidden" name="pricePerNight" value="${hotel.dynamic_price}">
         
         <div class="space-y-4">
           <div class="grid grid-cols-2 gap-3">
@@ -440,7 +464,7 @@ hotelsRoute.get('/:id', async (c) => {
   </div>
 
   <script>
-  const pricePerNight = ${hotel.price_per_night};
+  const pricePerNight = ${hotel.dynamic_price};
   const lang = '${lang}';
   
   function changeMainImg(src) {
