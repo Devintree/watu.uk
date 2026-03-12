@@ -54,7 +54,17 @@ export function getLayout(lang: Lang, title: string, content: string, currentPat
       .mobile-menu.open { display: block; }
     }
   </style>
-</head>
+
+      <style>
+        .prose p { margin-bottom: 1em; }
+        .prose ul { list-style-type: disc; margin-left: 1.5em; margin-bottom: 1em; }
+        .prose ol { list-style-type: decimal; margin-left: 1.5em; margin-bottom: 1em; }
+        .prose h1, .prose h2, .prose h3 { font-weight: bold; margin-top: 1.5em; margin-bottom: 0.5em; color: #111827; }
+        .prose h1 { font-size: 1.5em; }
+        .prose h2 { font-size: 1.25em; }
+        .prose h3 { font-size: 1.125em; }
+      </style>
+  </head>
 <body class="bg-gray-50 text-gray-800">
 
 <!-- Navigation -->

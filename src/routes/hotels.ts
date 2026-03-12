@@ -196,8 +196,27 @@ hotelsRoute.get('/:id', async (c) => {
 
   <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      
       <!-- Left: Details -->
       <div class="lg:col-span-2">
+        <!-- Title & Rating & Info -->
+        <div class="mb-4 mt-2">
+          <div class="flex items-start justify-between mb-2">
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-900">
+              ${lang === 'zh' ? hotel.title_zh : hotel.title_en}
+              ${hotel.star_rating ? `<span class="text-amber-500 text-xl ml-2">${'⭐'.repeat(hotel.star_rating)}</span>` : ''}
+            </h1>
+            ${cityBadge(hotel.city, lang)}
+          </div>
+          <div class="flex flex-wrap items-center gap-3 text-gray-600 text-sm mb-4">
+            ${hotel.address ? `<span class="flex items-center"><i class="fas fa-map-marker-alt text-blue-400 mr-1"></i>${hotel.address}</span>` : ''}
+            ${hotel.phone ? `<span>·</span><span class="flex items-center"><i class="fas fa-phone-alt text-gray-400 mr-1"></i>${hotel.phone}</span>` : ''}
+            ${hotel.email ? `<span>·</span><span class="flex items-center"><i class="fas fa-envelope text-gray-400 mr-1"></i><a href="mailto:${hotel.email}" class="hover:text-blue-600">${hotel.email}</a></span>` : ''}
+            ${hotel.opening_year ? `<span>·</span><span>${lang==='zh'?'开业:':'Opened:'} ${hotel.opening_year}</span>` : ''}
+            ${hotel.room_count ? `<span>·</span><span>${lang==='zh'?'客房数:':'Rooms:'} ${hotel.room_count}</span>` : ''}
+          </div>
+        </div>
+
         <!-- Image Gallery -->
         <div class="relative mb-6">
           <div class="grid grid-cols-3 gap-2 h-72">
@@ -223,30 +242,53 @@ hotelsRoute.get('/:id', async (c) => {
           </div>
         </div>
 
-        <!-- Title & Rating -->
-        <div class="mb-6">
-          <div class="flex items-start justify-between mb-2">
-            <h1 class="text-2xl md:text-3xl font-bold text-gray-900">${lang === 'zh' ? hotel.title_zh : hotel.title_en}</h1>
-            ${cityBadge(hotel.city, lang)}
-          </div>
-          <div class="flex items-center space-x-3 text-gray-600">
-            <div class="flex items-center space-x-1">
-              ${starRating(hotel.rating || 0)}
-              <span class="font-semibold ml-1">${hotel.rating || 0}</span>
-              <span class="text-gray-400">(${hotel.review_count || 0} ${T('reviews')})</span>
-            </div>
-            <span>·</span>
-            <span class="flex items-center"><i class="fas fa-map-marker-alt text-blue-400 mr-1"></i>${hotel.address}</span>
-          </div>
-        </div>
-
         <!-- Description -->
+        ${(lang === 'zh' ? hotel.description_zh : hotel.description_en) ? `
         <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-6">
           <h2 class="text-lg font-bold text-gray-900 mb-3">${lang === 'zh' ? '房源介绍' : 'About This Property'}</h2>
-          <p class="text-gray-600 leading-relaxed">${lang === 'zh' ? hotel.description_zh : hotel.description_en}</p>
+          <div class="prose max-w-none text-gray-600 leading-relaxed text-sm md:text-base">
+            ${lang === 'zh' ? hotel.description_zh : hotel.description_en}
+          </div>
         </div>
+        ` : ''}
+
+        <!-- Room Types -->
+        ${hotel.rooms && hotel.rooms.length > 0 ? `
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-6">
+          <h2 class="text-lg font-bold text-gray-900 mb-4">${lang === 'zh' ? '可选房型' : 'Available Rooms'}</h2>
+          <div class="space-y-4">
+            ${hotel.rooms.map((rt: any) => {
+              let rtImages = [];
+              try { rtImages = JSON.parse(rt.images || '[]'); } catch(e) {}
+              return `
+              <div class="flex flex-col md:flex-row border border-gray-100 rounded-xl overflow-hidden hover:shadow-md transition-shadow">
+                ${rtImages[0] ? `
+                  <div class="md:w-1/3 h-40 md:h-auto">
+                    <img src="${rtImages[0]}" class="w-full h-full object-cover" alt="room">
+                  </div>
+                ` : `<div class="md:w-1/3 h-40 md:h-auto bg-gray-50 flex items-center justify-center text-gray-300"><i class="fas fa-bed text-3xl"></i></div>`}
+                <div class="p-4 md:w-2/3 flex flex-col justify-between">
+                  <div>
+                    <h3 class="font-bold text-lg text-gray-800">${lang === 'zh' ? rt.name_zh : rt.name_en}</h3>
+                    <div class="flex flex-wrap gap-2 mt-2 text-xs text-gray-600">
+                      ${rt.room_size_sqm ? `<span class="bg-gray-50 px-2 py-1 rounded"><i class="fas fa-vector-square mr-1"></i>${rt.room_size_sqm} ㎡</span>` : ''}
+                      ${rt.bed_type ? `<span class="bg-gray-50 px-2 py-1 rounded"><i class="fas fa-bed mr-1"></i>${rt.bed_type}</span>` : ''}
+                      <span class="bg-gray-50 px-2 py-1 rounded"><i class="fas fa-user mr-1"></i>${lang === 'zh' ? '最多' : 'Max'} ${rt.max_guests} ${lang === 'zh' ? '人' : 'Guests'}</span>
+                    </div>
+                  </div>
+                  <div class="mt-4 flex items-center justify-between">
+                    <div class="text-blue-700 font-bold text-xl">£${rt.base_price}<span class="text-sm text-gray-500 font-normal"> /${T('per_night')}${lang==='zh'?'起':' from'}</span></div>
+                  </div>
+                </div>
+              </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+        ` : ''}
 
         <!-- Amenities -->
+        ${amenities && amenities.length > 0 ? `
         <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-6">
           <h2 class="text-lg font-bold text-gray-900 mb-4">${T('hotel_amenities')}</h2>
           <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -258,6 +300,17 @@ hotelsRoute.get('/:id', async (c) => {
             `).join('')}
           </div>
         </div>
+        ` : ''}
+
+        <!-- Policies -->
+        ${(lang === 'zh' ? hotel.policies_zh : hotel.policies_en) ? `
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-6">
+          <h2 class="text-lg font-bold text-gray-900 mb-3">${lang === 'zh' ? '住宿政策' : 'Hotel Policies'}</h2>
+          <div class="prose max-w-none text-gray-600 leading-relaxed text-sm">
+            ${lang === 'zh' ? hotel.policies_zh : hotel.policies_en}
+          </div>
+        </div>
+        ` : ''}
 
         <!-- Reviews -->
         <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
