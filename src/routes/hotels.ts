@@ -216,7 +216,7 @@ hotelsRoute.get('/:id', async (c) => {
 
         <!-- Image Gallery (h-52 is ~30% smaller than h-72) -->
         <div class="relative mb-6">
-          <div class="grid grid-cols-3 gap-2 h-52">
+          <div class="grid grid-cols-3 gap-2 h-[250px] md:h-[320px]">
             <div class="col-span-2 rounded-2xl overflow-hidden cursor-pointer" onclick="openLightbox(0)">
               <img src="${images[0] || 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800'}" 
                    class="w-full h-full object-cover hover:scale-105 transition-transform duration-300" alt="main">
