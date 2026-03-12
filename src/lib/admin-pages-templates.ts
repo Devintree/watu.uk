@@ -222,9 +222,9 @@ export const richEditTemplate = (table: string, id: string) => `
   createApp({
     data() {
       return {
-        table: '\${table}',
-        id: '\${id}',
-        isNew: '\${id}' === 'new',
+        table: '${table}',
+        id: '${id}',
+        isNew: '${id}' === 'new',
         form: {
           title_zh: '', title_en: '',
           content_zh: '', content_en: '',
@@ -305,10 +305,26 @@ export const richEditTemplate = (table: string, id: string) => `
         
         const method = this.isNew ? 'POST' : 'PUT';
         const url = '/admin/api/' + this.table + (this.isNew ? '' : '/' + this.id);
+        
+        // Filter payload based on table
+        let payload = { ...this.form };
+        if (this.table === 'pages') {
+          payload = { 
+            title_zh: this.form.title_zh, 
+            title_en: this.form.title_en,
+            content_zh: this.form.content_zh,
+            content_en: this.form.content_en
+          };
+          if (!this.isNew && this.form.slug) payload.slug = this.form.slug;
+        } else {
+          // blogs
+          delete payload.slug;
+        }
+
         const res = await fetch(url, {
           method,
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(this.form)
+          body: JSON.stringify(payload)
         });
         if (res.ok) {
           alert('保存成功！');
