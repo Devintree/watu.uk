@@ -24,23 +24,30 @@ contentRoute.get('/info', async (c) => {
           <p class="text-gray-600">${lang === 'zh' ? '探索最新的英国旅游、留学及生活资讯' : 'Discover the latest news on UK travel, study, and life'}</p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           ${blogs.map((b: any) => {
             const images = JSON.parse(b.cover_image || '[]')
-            const cover = images[0] || 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=600'
-            const title = lang === 'zh' ? b.title_zh : b.title_en
-            const summary = lang === 'zh' ? b.summary_zh : b.summary_en
+            const cover = images[0] || 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=800'
+            const title = lang === 'zh' ? b.title_zh : (b.title_en || b.title_zh)
+            
             return `
-            <a href="/blogs/${b.id}?lang=${lang}" class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow group">
-              <div class="h-48 overflow-hidden">
-                <img src="${cover}" alt="${title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+            <a href="/blogs/${b.id}?lang=${lang}" class="card-hover relative rounded-2xl overflow-hidden shadow-sm block group aspect-[3/4]">
+              <img src="${cover}" alt="${title}" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+              <div class="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/80"></div>
+              
+              <div class="absolute top-3 right-3 bg-white/90 backdrop-blur-sm w-8 h-8 rounded-full flex items-center justify-center text-gray-700 hover:text-red-500 transition-colors z-10">
+                <i class="far fa-heart text-sm"></i>
               </div>
-              <div class="p-6">
-                <h3 class="text-xl font-bold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors line-clamp-2">${title}</h3>
-                <p class="text-gray-600 text-sm mb-4 line-clamp-3">${summary || ''}</p>
-                <div class="flex items-center justify-between text-xs text-gray-500 mt-auto">
-                  <span><i class="fas fa-eye mr-1"></i>${b.view_count || 0}</span>
-                  <span>${b.created_at ? new Date(b.created_at).toISOString().split('T')[0] : ''}</span>
+              
+              <div class="absolute bottom-0 left-0 right-0 p-4 text-white">
+                <h3 class="font-bold text-base md:text-lg leading-tight line-clamp-2 mb-2 group-hover:text-amber-300 transition-colors">${title}</h3>
+                <div class="flex items-center justify-between text-xs text-white/80">
+                  <div class="flex items-center">
+                    <div class="w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center text-white text-[10px] font-bold mr-2 border border-white/30">
+                      ${b.author ? b.author.charAt(0).toUpperCase() : 'W'}
+                    </div>
+                    <span>${b.author || 'Watu'}</span>
+                  </div>
                 </div>
               </div>
             </a>
