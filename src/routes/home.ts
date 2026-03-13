@@ -16,6 +16,7 @@ homeRoute.get('/', async (c) => {
   let featuredHotels: any[] = []
   let featuredGuides: any[] = []
   let featuredStudyTours: any[] = []
+  let featuredInfoBlogs: any[] = []
   
   try {
     const today = new Date().toISOString().split('T')[0];
@@ -42,6 +43,12 @@ homeRoute.get('/', async (c) => {
       'SELECT * FROM study_tours WHERE is_active = 1 ORDER BY created_at DESC LIMIT 3'
     ).all()
     featuredStudyTours = toursResult.results || []
+    
+    const infoResult = await c.env.DB.prepare(
+      "SELECT * FROM blogs WHERE is_published = 1 AND category = 'info' ORDER BY sort_order DESC, created_at DESC LIMIT 3"
+    ).all()
+    featuredInfoBlogs = infoResult.results || []
+
   } catch (e) {
     console.error('DB error:', e)
   }
@@ -380,6 +387,66 @@ homeRoute.get('/', async (c) => {
             </div>
           </a>`
         }).join('')}
+      </div>
+    </div>
+  </section>
+  ` : ''}
+
+  
+  <!-- Info Sharing Section -->
+  ${featuredInfoBlogs.length > 0 ? `
+  <section class="py-16 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6">
+      <div class="flex justify-between items-end mb-10">
+        <div>
+          <h2 class="text-3xl font-bold text-gray-900 mb-2">${lang === 'zh' ? '最新信息分享' : 'Latest Info Sharing'}</h2>
+          <p class="text-gray-600">${lang === 'zh' ? '为您提供英国本地实用资讯与指南' : 'Practical local information and guides for the UK'}</p>
+        </div>
+        <a href="/info?lang=${lang}" class="hidden sm:inline-flex items-center text-blue-600 hover:text-blue-800 font-medium">
+          ${lang === 'zh' ? '查看更多' : 'View All'} <i class="fas fa-arrow-right ml-2"></i>
+        </a>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        ${featuredInfoBlogs.map(blog => {
+          let imageUrl = 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=800';
+          try {
+            if (blog.cover_image) {
+              const images = JSON.parse(blog.cover_image);
+              if (images && images.length > 0) imageUrl = images[0];
+            }
+          } catch(e) {}
+          
+          const blogTitle = lang === 'zh' ? blog.title_zh : (blog.title_en || blog.title_zh);
+          const blogSummary = lang === 'zh' ? blog.summary_zh : (blog.summary_en || blog.summary_zh);
+          
+          return `
+          <a href="/blogs/${blog.id}?lang=${lang}" class="card-hover bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 block group">
+            <div class="relative h-48 overflow-hidden">
+              <img src="${imageUrl}" alt="${blogTitle}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+              <div class="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium text-blue-800 border border-blue-100">
+                ${lang === 'zh' ? '资讯' : 'Info'}
+              </div>
+            </div>
+            <div class="p-6">
+              <div class="text-xs text-gray-500 mb-2 flex items-center">
+                <i class="far fa-calendar-alt mr-1.5"></i>
+                ${new Date(blog.created_at).toLocaleDateString(lang === 'zh' ? 'zh-CN' : 'en-US')}
+              </div>
+              <h3 class="text-xl font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">${blogTitle}</h3>
+              <p class="text-gray-600 text-sm line-clamp-2 mb-4">${blogSummary || ''}</p>
+              <div class="flex items-center text-blue-600 text-sm font-medium">
+                ${lang === 'zh' ? '阅读全文' : 'Read More'} <i class="fas fa-angle-right ml-1.5 transition-transform group-hover:translate-x-1"></i>
+              </div>
+            </div>
+          </a>`
+        }).join('')}
+      </div>
+      
+      <div class="mt-8 text-center sm:hidden">
+        <a href="/info?lang=${lang}" class="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium">
+          ${lang === 'zh' ? '查看更多' : 'View All'} <i class="fas fa-arrow-right ml-2"></i>
+        </a>
       </div>
     </div>
   </section>
