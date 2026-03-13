@@ -26,7 +26,7 @@ export function getLayout(lang: Lang, title: string, content: string, currentPat
   <title>${title} - ${lang === 'zh' ? 'Watu · 英国中文住宿伙伴' : 'Watu · UK Chinese Travel Partner'}</title>
   <meta name="description" content="${lang === 'zh' ? 'Watu - 英国中文住宿伙伴，学旅安心之选。提供酒店预订、租房代办、中文导游、游学接待服务' : 'Watu - Your UK Chinese accommodation partner, the trusted choice for study and travel. Hotels, rentals, Mandarin guides and study tours.'}">  
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     html, body { overflow-x: hidden; width: 100%; }

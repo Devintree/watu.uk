@@ -97,7 +97,7 @@ function adminLayout(title: string, content: string, activeMenu: string = ''): s
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${title} - Watu管理后台</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <style>
     .sidebar { width: 240px; min-height: 100vh; background: linear-gradient(180deg, #1e3a5f 0%, #1a5276 100%); }
     .menu-item { transition: all 0.15s; }
