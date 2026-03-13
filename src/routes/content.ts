@@ -6,6 +6,64 @@ type Bindings = { DB: D1Database }
 const contentRoute = new Hono<{ Bindings: Bindings }>()
 
 // Generic static pages
+
+// Info Sharing route
+contentRoute.get('/info', async (c) => {
+  const lang = getLang(c)
+  const T = (key: any) => t(lang, key)
+  
+  try {
+    const result = await c.env.DB.prepare("SELECT * FROM blogs WHERE is_published = 1 AND category = 'info' ORDER BY sort_order DESC, created_at DESC").all()
+    const blogs = result.results || []
+
+    const content = `
+    <div class="bg-gray-50 py-12 min-h-screen">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6">
+        <div class="text-center mb-12">
+          <h1 class="text-3xl font-bold text-gray-900 mb-4">${T('nav_info')}</h1>
+          <p class="text-gray-600">${lang === 'zh' ? '探索最新的英国旅游、留学及生活资讯' : 'Discover the latest news on UK travel, study, and life'}</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          ${blogs.map((b: any) => {
+            const images = JSON.parse(b.cover_image || '[]')
+            const cover = images[0] || 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=600'
+            const title = lang === 'zh' ? b.title_zh : b.title_en
+            const summary = lang === 'zh' ? b.summary_zh : b.summary_en
+            return `
+            <a href="/blogs/${b.id}?lang=${lang}" class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow group">
+              <div class="h-48 overflow-hidden">
+                <img src="${cover}" alt="${title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+              </div>
+              <div class="p-6">
+                <h3 class="text-xl font-bold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors line-clamp-2">${title}</h3>
+                <p class="text-gray-600 text-sm mb-4 line-clamp-3">${summary || ''}</p>
+                <div class="flex items-center justify-between text-xs text-gray-500 mt-auto">
+                  <span><i class="fas fa-eye mr-1"></i>${b.view_count || 0}</span>
+                  <span>${b.created_at ? new Date(b.created_at).toISOString().split('T')[0] : ''}</span>
+                </div>
+              </div>
+            </a>
+            `
+          }).join('')}
+          
+          ${blogs.length === 0 ? `
+            <div class="col-span-3 text-center py-20 text-gray-500">
+              <i class="far fa-folder-open text-4xl mb-4 text-gray-300"></i>
+              <p>${lang === 'zh' ? '暂无内容' : 'No content available'}</p>
+            </div>
+          ` : ''}
+        </div>
+      </div>
+    </div>
+    `
+    return c.html(getLayout(lang, T('nav_info'), content, '/info'))
+  } catch (e) {
+    console.error('DB error:', e)
+    return c.html(getLayout(lang, 'Error', '<div class="text-center py-20 text-red-500">System Error</div>', '/info'))
+  }
+})
+
 contentRoute.get('/page/:slug', async (c) => {
   const lang = getLang(c)
   const slug = c.req.param('slug')
@@ -45,7 +103,7 @@ contentRoute.get('/blogs', async (c) => {
   const T = (key: any) => t(lang, key)
   
   try {
-    const result = await c.env.DB.prepare('SELECT * FROM blogs WHERE is_published = 1 ORDER BY sort_order DESC, created_at DESC').all()
+    const result = await c.env.DB.prepare("SELECT * FROM blogs WHERE is_published = 1 AND (category = 'blog' OR category IS NULL) ORDER BY sort_order DESC, created_at DESC").all()
     const blogs = result.results || []
 
     const content = `

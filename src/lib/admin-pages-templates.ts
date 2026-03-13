@@ -110,6 +110,30 @@ export const pageListTemplate = `
 export const richEditTemplate = (table: string, id: string) => `
 <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
 <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+
+<style>
+  .ql-editor { min-height: 400px; font-size: 15px; line-height: 1.6; }
+  .editor-fs-mode {
+    position: fixed !important;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 10000;
+    background: #f3f4f6;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+  }
+  .editor-fs-mode .ql-toolbar {
+    background: white;
+    border-radius: 8px 8px 0 0;
+  }
+  .editor-fs-mode .ql-container {
+    flex-grow: 1;
+    background: white;
+    overflow-y: auto;
+    border-radius: 0 0 8px 8px;
+  }
+</style>
+
 <div id="edit-app" class="pb-20">
   <div class="flex items-center justify-between mb-6">
     <h2 class="font-bold text-gray-800 text-xl">{{ isNew ? '添加' : '编辑' }}{{ table === 'blogs' ? '博客' : '单页' }}</h2>
@@ -140,7 +164,16 @@ export const richEditTemplate = (table: string, id: string) => `
     </div>
 
     <template v-if="table === 'blogs'">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">类别分类</label>
+          <select v-model="form.category" class="w-full border rounded-lg p-2.5 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-shadow">
+            <option value="blog">博客 (Blog)</option>
+            <option value="info">信息分享 (Info)</option>
+          </select>
+        </div>
+
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">作者</label>
           <input type="text" v-model="form.author" class="w-full border rounded-lg p-2.5 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-shadow" placeholder="默认: Watu">
@@ -226,11 +259,13 @@ export const richEditTemplate = (table: string, id: string) => `
         id: '${id}',
         isNew: '${id}' === 'new',
         form: {
-          title_zh: '', title_en: '',
+          title_zh: '', title_en: '', category: 'blog',
           content_zh: '', content_en: '',
           author: '', summary_zh: '', summary_en: '', cover_image: '[]',
           sort_order: 0, is_published: 1, slug: ''
         },
+        fullscreenZh: false,
+        fullscreenEn: false,
         quillZh: null,
         quillEn: null
       }
@@ -319,6 +354,8 @@ export const richEditTemplate = (table: string, id: string) => `
         } else {
           // blogs
           delete payload.slug;
+          // Keep category for blogs
+          payload.category = this.form.category || 'blog';
         }
 
         const res = await fetch(url, {
