@@ -25,6 +25,7 @@ export function getLayout(lang: Lang, title: string, content: string, currentPat
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>${title} - ${lang === 'zh' ? 'Watu · 英国中文住宿伙伴' : 'Watu · UK Chinese Travel Partner'}</title>
   <meta name="description" content="${lang === 'zh' ? 'Watu - 英国中文住宿伙伴，学旅安心之选。提供酒店预订、租房代办、中文导游、游学接待服务' : 'Watu - Your UK Chinese accommodation partner, the trusted choice for study and travel. Hotels, rentals, Mandarin guides and study tours.'}">  
+  <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48" type="image/x-icon">
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
