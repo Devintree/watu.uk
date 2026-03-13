@@ -92,11 +92,11 @@ hotelsRoute.get('/', async (c) => {
         const images = JSON.parse(hotel.images || '[]')
         const amenities = JSON.parse(lang === 'zh' ? (hotel.amenities_zh || '[]') : (hotel.amenities_en || '[]'))
         return `
-        <div class="card-hover bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 fade-in">
-          <div class="relative h-56 overflow-hidden">
+        <a href="/hotels/${hotel.id}?lang=${lang}" class="card-hover bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 fade-in block cursor-pointer group flex flex-col h-full">
+          <div class="relative h-56 overflow-hidden flex-shrink-0">
             <img src="${images[0] || 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=600'}" 
                  alt="${lang === 'zh' ? hotel.title_zh : hotel.title_en}"
-                 class="w-full h-full object-cover transition-transform hover:scale-105">
+                 class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
             <div class="absolute top-3 left-3">
               ${cityBadge(hotel.city, lang)}
             </div>
@@ -104,31 +104,35 @@ hotelsRoute.get('/', async (c) => {
               £${hotel.dynamic_price}/${T('per_night')}
             </div>
           </div>
-          <div class="p-5">
-            <h3 class="font-bold text-gray-900 text-base mb-1">${lang === 'zh' ? hotel.title_zh : hotel.title_en}</h3>
-            <p class="text-gray-500 text-xs mb-2 flex items-center">
-              <i class="fas fa-map-marker-alt mr-1 text-blue-400"></i>
+          <div class="p-5 flex flex-col flex-grow">
+            <h3 class="font-bold text-gray-900 text-lg mb-1 group-hover:text-blue-600 transition-colors line-clamp-1">${lang === 'zh' ? hotel.title_zh : hotel.title_en}</h3>
+            <p class="text-gray-500 text-xs mb-2 flex items-center line-clamp-1">
+              <i class="fas fa-map-marker-alt mr-1.5 text-blue-400"></i>
               ${hotel.address}
             </p>
             <div class="flex items-center space-x-2 mb-3">
               ${starRating(hotel.rating || 0)}
               <span class="text-sm text-gray-500">${hotel.rating || 0} (${hotel.review_count || 0} ${T('reviews')})</span>
             </div>
-            <p class="text-gray-600 text-sm mb-3 line-clamp-2">${lang === 'zh' ? hotel.description_zh : hotel.description_en}</p>
-            <div class="flex flex-wrap gap-1 mb-4">
-              ${amenities.slice(0, 4).map((a: string) => `<span class="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">${a}</span>`).join('')}
+            
+            <p class="text-gray-600 text-sm mb-4 line-clamp-2 leading-relaxed font-normal flex-grow">
+              ${(lang === 'zh' ? hotel.description_zh : hotel.description_en)?.replace(/<[^>]*>?/gm, '').trim() || ''}
+            </p>
+            
+            <div class="flex flex-wrap gap-1.5 mb-4 h-6 overflow-hidden">
+              ${amenities.slice(0, 4).map((a: string) => `<span class="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-md font-medium whitespace-nowrap">${a}</span>`).join('')}
             </div>
-            <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+            <div class="flex items-center justify-between pt-4 border-t border-gray-100 mt-auto">
               <div>
-                <span class="font-bold text-blue-700 text-lg">£${hotel.dynamic_price}</span>
+                <span class="font-bold text-blue-700 text-xl">£${hotel.dynamic_price}</span>
                 <span class="text-gray-500 text-sm ml-1">/${T('per_night')}</span>
               </div>
-              <a href="/hotels/${hotel.id}?lang=${lang}" class="btn-primary text-white px-5 py-2 rounded-full text-sm font-semibold shadow-sm">
+              <span class="btn-primary text-white px-5 py-2 rounded-full text-sm font-semibold shadow-sm group-hover:shadow-md transition-all">
                 ${T('book_now')}
-              </a>
+              </span>
             </div>
           </div>
-        </div>`
+        </a>`
       }).join('')}
     </div>
     ` : `
