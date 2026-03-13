@@ -6,7 +6,7 @@ type Bindings = { DB: D1Database }
 const rentalsRoute = new Hono<{ Bindings: Bindings }>()
 
 rentalsRoute.get('/', async (c) => {
-  const lang = (c.req.query('lang') || 'zh') as Lang
+  const lang = (c.req.query('lang') || 'en') as Lang
   const city = c.req.query('city') || ''
   const T = (key: any) => t(lang, key)
 
@@ -168,7 +168,7 @@ rentalsRoute.get('/', async (c) => {
 })
 
 rentalsRoute.get('/:id', async (c) => {
-  const lang = (c.req.query('lang') || 'zh') as Lang
+  const lang = (c.req.query('lang') || 'en') as Lang
   const id = c.req.param('id')
   const T = (key: any) => t(lang, key)
 

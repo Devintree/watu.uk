@@ -315,6 +315,6 @@ export function t(lang: Lang, key: TranslationKey): string {
 export function getLang(c: any): Lang {
   const langCookie = c.req.raw?.headers?.get('cookie')?.match(/lang=([^;]+)/)?.[1]
   const langQuery = c.req.query?.('lang')
-  const lang = langQuery || langCookie || 'zh'
+  const lang = langQuery || langCookie || 'en'
   return (lang === 'en' ? 'en' : 'zh') as Lang
 }

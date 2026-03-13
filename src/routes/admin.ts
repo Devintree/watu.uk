@@ -52,6 +52,21 @@ adminRoute.get('/login', (c) => {
       </button>
     </form>
   </div>
+
+  <script>
+    fetch('/admin/api/stats/badges')
+      .then(res => res.json())
+      .then(data => {
+        if (data.orders > 0) {
+          const b = document.getElementById('badge-orders');
+          if(b) { b.textContent = data.orders; b.classList.remove('hidden'); }
+        }
+        if (data.inquiries > 0) {
+          const b = document.getElementById('badge-inquiries');
+          if(b) { b.textContent = data.inquiries; b.classList.remove('hidden'); }
+        }
+      }).catch(e => console.error(e));
+  </script>
 </body>
 </html>`)
 })
@@ -121,9 +136,13 @@ function adminLayout(title: string, content: string, activeMenu: string = ''): s
     </div>
     <nav class="flex-1 p-3 space-y-1">
       ${menuItems.map(item => `
-        <a href="${item.href}" class="menu-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-white/80 hover:text-white ${activeMenu === item.key ? 'active text-white' : ''}">
-          <span>${item.icon}</span>
-          <span class="text-sm font-medium">${item.label}</span>
+        <a href="${item.href}" class="menu-item flex items-center justify-between px-3 py-2.5 rounded-lg text-white/80 hover:text-white ${activeMenu === item.key ? 'active text-white' : ''}">
+          <div class="flex items-center space-x-3">
+            <span>${item.icon}</span>
+            <span class="text-sm font-medium">${item.label}</span>
+          </div>
+          ${item.key === 'orders' ? '<span id="badge-orders" class="hidden bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">0</span>' : ''}
+          ${item.key === 'inquiries' ? '<span id="badge-inquiries" class="hidden bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">0</span>' : ''}
         </a>
       `).join('')}
     </nav>
@@ -293,6 +312,58 @@ const tourSchema = {
     { key: 'sort_order', label: '排序', type: 'number' }
   ]
 }
+
+const orderSchema = {
+  columns: [
+    { key: 'order_no', label: '订单号' },
+    { key: 'user_name', label: '客户姓名' },
+    { key: 'service_title', label: '服务标题' },
+    { key: 'amount', label: '金额' },
+    { key: 'status', label: '状态' },
+    { key: 'payment_status', label: '支付状态' },
+    { key: 'created_at', label: '创建时间' }
+  ],
+  form: [
+    { key: 'order_no', label: '订单号' },
+    { key: 'user_name', label: '客户姓名' },
+    { key: 'user_email', label: '邮箱' },
+    { key: 'user_phone', label: '电话' },
+    { key: 'user_wechat', label: '微信' },
+    { key: 'service_type', label: '服务类型' },
+    { key: 'service_title', label: '服务标题' },
+    { key: 'check_in', label: '入住/开始时间', type: 'text' },
+    { key: 'check_out', label: '退房/结束时间', type: 'text' },
+    { key: 'guests', label: '人数', type: 'number' },
+    { key: 'amount', label: '金额', type: 'number' },
+    { key: 'currency', label: '货币' },
+    { key: 'status', label: '状态' },
+    { key: 'payment_status', label: '支付状态' },
+    { key: 'admin_notes', label: '内部备注', type: 'textarea' }
+  ]
+}
+
+const inquirySchema = {
+  columns: [
+    { key: 'name', label: '姓名' },
+    { key: 'email', label: '邮箱' },
+    { key: 'wechat', label: '微信' },
+    { key: 'status', label: '状态' },
+    { key: 'created_at', label: '时间' }
+  ],
+  form: [
+    { key: 'name', label: '姓名' },
+    { key: 'email', label: '邮箱' },
+    { key: 'phone', label: '电话' },
+    { key: 'wechat', label: '微信' },
+    { key: 'service_type', label: '服务类型' },
+    { key: 'message', label: '留言内容', type: 'textarea' },
+    { key: 'status', label: '状态' },
+    { key: 'admin_reply', label: '内部备注/回复', type: 'textarea' }
+  ]
+}
+
+adminRoute.get('/orders', (c) => c.html(adminLayout('订单管理', crudTemplate('订单管理', 'orders', orderSchema), 'orders')))
+adminRoute.get('/inquiries', (c) => c.html(adminLayout('咨询管理', crudTemplate('咨询管理', 'inquiries', inquirySchema), 'inquiries')))
 
 adminRoute.get('/rentals', (c) => c.html(adminLayout('租房管理', crudTemplate('租房管理', 'rentals', rentalSchema), 'rentals')))
 adminRoute.get('/guides', (c) => c.html(adminLayout('导游管理', crudTemplate('导游管理', 'guides', guideSchema), 'guides')))

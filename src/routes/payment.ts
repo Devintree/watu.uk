@@ -6,7 +6,7 @@ type Bindings = { DB: D1Database }
 const paymentRoute = new Hono<{ Bindings: Bindings }>()
 
 paymentRoute.get('/success', async (c) => {
-  const lang = (c.req.query('lang') || 'zh') as Lang
+  const lang = (c.req.query('lang') || 'en') as Lang
   const orderNo = c.req.query('order') || ''
   const T = (key: any) => t(lang, key)
 
@@ -84,7 +84,7 @@ paymentRoute.get('/success', async (c) => {
 })
 
 paymentRoute.get('/cancel', async (c) => {
-  const lang = (c.req.query('lang') || 'zh') as Lang
+  const lang = (c.req.query('lang') || 'en') as Lang
   const orderNo = c.req.query('order') || ''
 
   const content = `

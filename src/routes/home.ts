@@ -9,7 +9,7 @@ type Bindings = {
 const homeRoute = new Hono<{ Bindings: Bindings }>()
 
 homeRoute.get('/', async (c) => {
-  const lang = (c.req.query('lang') || 'zh') as Lang
+  const lang = (c.req.query('lang') || 'en') as Lang
   const T = (key: any) => t(lang, key)
 
   // Fetch featured hotels

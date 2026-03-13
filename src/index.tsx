@@ -39,7 +39,7 @@ app.route('/payment', paymentRoute)
 
 // Contact page
 app.get('/contact', (c) => {
-  const lang = (c.req.query('lang') || 'zh') as 'zh' | 'en'
+  const lang = (c.req.query('lang') || 'en') as 'zh' | 'en'
   
   return c.html(getLayout(lang, lang === 'zh' ? '联系我们' : 'Contact Us', `
   <section class="gradient-bg py-12 text-white">
@@ -100,7 +100,7 @@ app.get('/contact', (c) => {
 
 // 404 handler
 app.notFound((c) => {
-  const lang = (c.req.query('lang') || 'zh') as 'zh' | 'en'
+  const lang = (c.req.query('lang') || 'en') as 'zh' | 'en'
   return c.html(`<!DOCTYPE html>
 <html>
 <head>

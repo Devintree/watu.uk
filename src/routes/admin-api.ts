@@ -12,7 +12,7 @@ adminApi.use('*', async (c, next) => {
   return next()
 })
 
-const ALLOWED_TABLES = ['hotels', 'rentals', 'guides', 'study_tours', 'blogs', 'pages', 'room_types', 'room_inventory']
+const ALLOWED_TABLES = ['hotels', 'rentals', 'guides', 'study_tours', 'blogs', 'pages', 'room_types', 'room_inventory', 'orders', 'inquiries']
 
 // Advanced bulk update for calendar inventory
 adminApi.post('/inventory-bulk', async (c) => {
@@ -78,7 +78,25 @@ adminApi.get('/proxy/ctrip/:id', async (c) => {
 // generic CRUD endpoints below
 
 
+
+// Badge counts for sidebar
+adminApi.get('/stats/badges', async (c) => {
+  try {
+    const [ordersResult, inquiriesResult] = await Promise.all([
+      c.env.DB.prepare("SELECT COUNT(*) as count FROM orders WHERE status = 'pending'").first(),
+      c.env.DB.prepare("SELECT COUNT(*) as count FROM inquiries WHERE status = 'new'").first()
+    ]);
+    return c.json({
+      orders: (ordersResult as any)?.count || 0,
+      inquiries: (inquiriesResult as any)?.count || 0
+    });
+  } catch (e) {
+    return c.json({ orders: 0, inquiries: 0 });
+  }
+})
+
 // GET all
+
 adminApi.get('/:table', async (c) => {
   const table = c.req.param('table')
   if (!ALLOWED_TABLES.includes(table)) return c.json({ error: 'Invalid table' }, 400)
@@ -88,7 +106,7 @@ adminApi.get('/:table', async (c) => {
   
   if (table === 'room_types' && hotelId) {
     query = `SELECT * FROM room_types WHERE hotel_id = ${hotelId} ORDER BY created_at DESC`
-  } else if (table !== 'pages' && table !== 'room_types' && table !== 'room_inventory') {
+  } else if (table !== 'pages' && table !== 'room_types' && table !== 'room_inventory' && table !== 'orders' && table !== 'inquiries') {
     query = `SELECT * FROM ${table} ORDER BY sort_order DESC, created_at DESC`
   }
   
