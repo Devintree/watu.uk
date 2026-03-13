@@ -108,8 +108,8 @@ export const pageListTemplate = `
 `;
 
 export const richEditTemplate = (table: string, id: string) => `
-<link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
 
 <style>
   .ql-editor { min-height: 400px; font-size: 15px; line-height: 1.6; }
