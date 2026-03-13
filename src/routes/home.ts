@@ -64,8 +64,8 @@ homeRoute.get('/', async (c) => {
           <span class="text-amber-300 text-sm font-medium">${lang === 'zh' ? '专为华人打造 · 品质保证' : 'Built for Chinese Community · Quality Assured'}</span>
         </div>
         
-        <h1 class="text-3xl md:text-5xl font-bold text-white leading-tight mb-4">
-          ${lang === 'zh' ? '<span class="text-amber-400">Watu</span> &mdash; 您在英国的<br>华人住宿与旅行专家' : '<span class="text-amber-400">Watu</span> &mdash; Your UK<br>Chinese Travel Partner'}
+        <h1 class="text-3xl md:text-5xl font-bold text-white leading-tight mb-4 md:whitespace-nowrap">
+          ${lang === 'zh' ? '<span class="text-amber-400">Watu</span> &mdash; 您在英国的华人住宿与旅行专家' : '<span class="text-amber-400">Watu</span> &mdash; Your UK Chinese Travel Partner'}
         </h1>
         <p class="text-xl text-white/80 mb-8 max-w-xl">
           ${T('hero_subtitle')}
