@@ -186,7 +186,7 @@ contentRoute.get('/blogs/:id', async (c) => {
         </div>
       </div>
       
-      <div class="max-w-3xl mx-auto px-4 sm:px-6 -mt-10 relative z-10">
+      <div class="max-w-5xl mx-auto px-4 sm:px-6 -mt-10 relative z-10">
         <div class="bg-white rounded-2xl shadow-lg p-8 md:p-12 border border-gray-100">
           <div class="prose prose-blue max-w-none text-gray-800 leading-relaxed text-lg">
             ${htmlContent || ''}
