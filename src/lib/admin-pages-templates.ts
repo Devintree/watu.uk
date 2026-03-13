@@ -326,8 +326,12 @@ export const richEditTemplate = (table: string, id: string) => `
         if (res.ok) {
           const data = await res.json();
           this.form = { ...this.form, ...data };
-          if (this.form.content_zh) Object.getPrototypeOf(this.quillZh).clipboard.dangerouslyPasteHTML.call(this.quillZh, this.form.content_zh);
-          if (this.form.content_en) Object.getPrototypeOf(this.quillEn).clipboard.dangerouslyPasteHTML.call(this.quillEn, this.form.content_en);
+          if (this.form.content_zh) {
+            this.quillZh.clipboard.dangerouslyPasteHTML(this.form.content_zh);
+          }
+          if (this.form.content_en) {
+            this.quillEn.clipboard.dangerouslyPasteHTML(this.form.content_en);
+          }
         }
       },
       async save() {
