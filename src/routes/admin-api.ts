@@ -108,6 +108,8 @@ adminApi.get('/:table', async (c) => {
     query = `SELECT * FROM room_types WHERE hotel_id = ${hotelId} ORDER BY created_at DESC`
   } else if (table !== 'pages' && table !== 'room_types' && table !== 'room_inventory' && table !== 'orders' && table !== 'inquiries') {
     query = `SELECT * FROM ${table} ORDER BY sort_order DESC, created_at DESC`
+  } else if (table === 'pages') {
+    query = `SELECT * FROM pages ORDER BY id ASC`
   }
   
   const results = await c.env.DB.prepare(query).all()
