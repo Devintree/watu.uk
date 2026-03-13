@@ -193,15 +193,15 @@ contentRoute.get('/blogs/:id', async (c) => {
           </div>
           
           <div class="mt-12 pt-8 border-t border-gray-100 flex justify-between items-center">
-            <a href="/blogs?lang=${lang}" class="text-blue-600 hover:text-blue-800 font-medium flex items-center">
-              <i class="fas fa-arrow-left mr-2"></i> ${lang === 'zh' ? '返回博客列表' : 'Back to Blogs'}
+            <a href="${blog.category === 'info' ? '/info' : '/blogs'}?lang=${lang}" class="text-blue-600 hover:text-blue-800 font-medium flex items-center">
+              <i class="fas fa-arrow-left mr-2"></i> ${lang === 'zh' ? (blog.category === 'info' ? '返回信息分享' : '返回博客列表') : (blog.category === 'info' ? 'Back to Info Sharing' : 'Back to Blogs')}
             </a>
           </div>
         </div>
       </div>
     </div>
     `
-    return c.html(getLayout(lang, title as string, content, '/blogs'))
+    return c.html(getLayout(lang, title as string, content, blog.category === 'info' ? '/info' : '/blogs'))
   } catch (e) {
     console.error(e)
     return c.html('Internal Server Error', 500)
