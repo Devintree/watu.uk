@@ -10,6 +10,7 @@ export function getLayout(lang: Lang, title: string, content: string, currentPat
     { key: 'nav_rentals' as TranslationKey, href: '/rentals' },
     { key: 'nav_guides' as TranslationKey, href: '/guides' },
     { key: 'nav_study_tours' as TranslationKey, href: '/study-tours' },
+    { key: 'nav_info' as TranslationKey, href: '/info' },
   ]
   
   const isActive = (href: string) => {
@@ -164,7 +165,7 @@ export function getLayout(lang: Lang, title: string, content: string, currentPat
           <li><a href="/hotels?lang=${lang}" class="hover:text-white transition-colors">${T('nav_hotels')}</a></li>
           <li><a href="/rentals?lang=${lang}" class="hover:text-white transition-colors">${T('nav_rentals')}</a></li>
           <li><a href="/guides?lang=${lang}" class="hover:text-white transition-colors">${T('nav_guides')}</a></li>
-          <li><a href="/study-tours?lang=${lang}" class="hover:text-white transition-colors">${T('nav_study_tours')}</a></li>
+          <li></li>
         </ul>
       </div>
       
