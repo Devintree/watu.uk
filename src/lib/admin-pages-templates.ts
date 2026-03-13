@@ -108,8 +108,8 @@ export const pageListTemplate = `
 `;
 
 export const richEditTemplate = (table: string, id: string) => `
-<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
-<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
 
 <style>
   .ql-editor { min-height: 400px; font-size: 15px; line-height: 1.6; }
@@ -232,7 +232,7 @@ export const richEditTemplate = (table: string, id: string) => `
         <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
           <span class="w-2 h-2 rounded-full bg-blue-500 mr-2"></span> 正文内容 (中文)
         </label>
-        <div class="border rounded-xl overflow-hidden shadow-sm">
+        <div class="border rounded-xl shadow-sm">
           <div ref="quillZh" class="h-[500px] bg-white"></div>
         </div>
       </div>
@@ -240,7 +240,7 @@ export const richEditTemplate = (table: string, id: string) => `
         <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
           <span class="w-2 h-2 rounded-full bg-indigo-500 mr-2"></span> 正文内容 (英文)
         </label>
-        <div class="border rounded-xl overflow-hidden shadow-sm">
+        <div class="border rounded-xl shadow-sm">
           <div ref="quillEn" class="h-[500px] bg-white"></div>
         </div>
       </div>
