@@ -1,3 +1,4 @@
+import { stripeRoute } from './routes/stripe';
 import { Hono } from 'hono'
 import { logger } from 'hono/logger'
 import homeRoute from './routes/home'
@@ -33,6 +34,7 @@ app.route('/guides', guidesRoute)
 app.route('/study-tours', studyToursRoute)
 app.route('/api', apiRoute)
 app.route('/admin/api', adminApi)
+app.route('/api/stripe', stripeRoute)
 app.route('/', contentRoute)
 app.route('/admin', adminRoute)
 app.route('/payment', paymentRoute)

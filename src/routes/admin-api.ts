@@ -1,3 +1,4 @@
+import Stripe from 'stripe';
 import { Hono } from 'hono'
 
 type Bindings = { DB: D1Database }
@@ -96,6 +97,34 @@ adminApi.get('/stats/badges', async (c) => {
 })
 
 // GET all
+
+
+// 退款 API
+adminApi.post('/orders/:id/refund', async (c) => {
+  const id = c.req.param('id');
+  const db = c.env.DB;
+  
+  const order: any = await db.prepare('SELECT * FROM orders WHERE id = ?').bind(id).first();
+  if (!order || !order.stripe_payment_intent) {
+    return c.json({ error: 'Order not found or not paid via Stripe' }, 400);
+  }
+  if (order.payment_status === 'refunded') {
+    return c.json({ error: 'Already refunded' }, 400);
+  }
+
+  const stripe = new Stripe(c.env.STRIPE_SECRET_KEY, { apiVersion: '2023-10-16' as any });
+  
+  try {
+    const refund = await stripe.refunds.create({
+      payment_intent: order.stripe_payment_intent,
+    });
+    
+    await db.prepare("UPDATE orders SET status = 'refunded', payment_status = 'refunded' WHERE id = ?").bind(id).run();
+    return c.json({ success: true, refund });
+  } catch (error: any) {
+    return c.json({ error: error.message }, 500);
+  }
+});
 
 adminApi.get('/:table', async (c) => {
   const table = c.req.param('table')
