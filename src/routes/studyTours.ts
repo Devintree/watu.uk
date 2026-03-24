@@ -1,5 +1,5 @@
 import { Hono } from 'hono'
-import { Lang, t } from '../lib/i18n'
+import {  Lang, t , getCurrency } from '../lib/i18n'
 import { getLayout, starRating } from '../lib/layout'
 
 type Bindings = { DB: D1Database }
@@ -7,6 +7,7 @@ const studyToursRoute = new Hono<{ Bindings: Bindings }>()
 
 studyToursRoute.get('/', async (c) => {
   const lang = (c.req.query('lang') || 'en') as Lang
+  const currency = getCurrency(c);
   const T = (key: any) => t(lang, key)
 
   let tours: any[] = []
@@ -77,7 +78,7 @@ studyToursRoute.get('/', async (c) => {
                   </div>
                 </div>
                 <div class="text-right flex-shrink-0 ml-4">
-                  <span class="text-2xl font-bold text-purple-700">£${tour.price_per_person}</span>
+                  <span class="text-2xl font-bold text-purple-700">${currency === 'GBP' ? '£' : '¥'}${currency === 'GBP' ? tour.price_per_person : tour.price_per_person_cny}</span>
                   <div class="text-xs text-gray-500">${T('per_person')}</div>
                 </div>
               </div>
@@ -140,10 +141,14 @@ studyToursRoute.get('/', async (c) => {
   </div>
 
   <script>
+        const currency = '${currency}';
   const lang = '${lang}';
+  const currency = getCurrency(c);
   async function submitCustom(e) {
     e.preventDefault();
     const body = Object.fromEntries(new FormData(e.target).entries());
+    body.currency = typeof currency !== 'undefined' ? currency : 'GBP';
+
     try {
       await fetch('/api/inquiries', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) });
       document.getElementById('customModal').classList.remove('active');
@@ -154,11 +159,12 @@ studyToursRoute.get('/', async (c) => {
   </script>
   `
 
-  return c.html(getLayout(lang, T('nav_study_tours'), content, '/study-tours'))
+  return c.html(getLayout(lang, T('nav_study_tours'), content, '/study-tours', currency))
 })
 
 studyToursRoute.get('/:id', async (c) => {
   const lang = (c.req.query('lang') || 'en') as Lang
+  const currency = getCurrency(c);
   const id = c.req.param('id')
   const T = (key: any) => t(lang, key)
 
@@ -287,7 +293,7 @@ studyToursRoute.get('/:id', async (c) => {
           <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-4">
             <div class="text-center pb-4 border-b border-gray-100 mb-4">
               <div class="text-sm text-gray-500 mb-1">${T('price_from')}</div>
-              <span class="text-3xl font-bold text-purple-700">£${tour.price_per_person}</span>
+              <span class="text-3xl font-bold text-purple-700">${currency === 'GBP' ? '£' : '¥'}${currency === 'GBP' ? tour.price_per_person : tour.price_per_person_cny}</span>
               <span class="text-gray-500 ml-1">/${T('per_person')}</span>
             </div>
             <button onclick="document.getElementById('bookingModal').classList.add('active')"
@@ -321,7 +327,7 @@ studyToursRoute.get('/:id', async (c) => {
         <input type="hidden" name="lang" value="${lang}">
         <div class="bg-purple-50 rounded-xl p-3 text-sm text-purple-800">
           <strong>${lang === 'zh' ? tour.title_zh : tour.title_en}</strong><br>
-          ${lang === 'zh' ? `£${tour.price_per_person}/人` : `£${tour.price_per_person}/person`}
+          ${lang === 'zh' ? `${currency === 'GBP' ? '£' : '¥'}${currency === 'GBP' ? tour.price_per_person : tour.price_per_person_cny}/人` : `${currency === 'GBP' ? '£' : '¥'}${currency === 'GBP' ? tour.price_per_person : tour.price_per_person_cny}/person`}
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">${lang === 'zh' ? '期望出发日期 *' : 'Preferred Start Date *'}</label>
@@ -348,7 +354,7 @@ studyToursRoute.get('/:id', async (c) => {
                   class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-purple-400 resize-none"></textarea>
         <div class="bg-gray-50 rounded-xl p-3 text-sm flex justify-between">
           <span>${T('order_total')}</span>
-          <strong id="totalDisplay">£${tour.price_per_person}</strong>
+          <strong id="totalDisplay">${currency === 'GBP' ? '£' : '¥'}${currency === 'GBP' ? tour.price_per_person : tour.price_per_person_cny}</strong>
         </div>
         <input type="hidden" id="amountInput" name="amount" value="${tour.price_per_person}">
         <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-xl font-bold transition-colors">
@@ -379,16 +385,20 @@ studyToursRoute.get('/:id', async (c) => {
   </div>
 
   <script>
+        const currency = '${currency}';
   const lang = '${lang}';
-  const pricePerPerson = ${tour.price_per_person};
+  const currency = getCurrency(c);
+  const pricePerPerson = ${currency === 'GBP' ? tour.price_per_person : tour.price_per_person_cny};
   function updateTotal(n) {
     const total = n * pricePerPerson;
-    document.getElementById('totalDisplay').textContent = '£' + total;
+    document.getElementById('totalDisplay').textContent = (currency === 'GBP' ? '£' : '¥') + total;
     document.getElementById('amountInput').value = total;
   }
   async function submitBooking(e) {
     e.preventDefault();
     const body = Object.fromEntries(new FormData(e.target).entries());
+    body.currency = typeof currency !== 'undefined' ? currency : 'GBP';
+
     const btn = e.target.querySelector('[type="submit"]');
     btn.disabled = true;
     try {
@@ -404,6 +414,8 @@ studyToursRoute.get('/:id', async (c) => {
   async function submitInquiry(e) {
     e.preventDefault();
     const body = Object.fromEntries(new FormData(e.target).entries());
+    body.currency = typeof currency !== 'undefined' ? currency : 'GBP';
+
     try {
       await fetch('/api/inquiries', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) });
       document.getElementById('inquiryModal').classList.remove('active');
@@ -414,7 +426,7 @@ studyToursRoute.get('/:id', async (c) => {
   </script>
   `
 
-  return c.html(getLayout(lang, lang === 'zh' ? tour.title_zh : tour.title_en, content, '/study-tours'))
+  return c.html(getLayout(lang, lang === 'zh' ? tour.title_zh : tour.title_en, content, '/study-tours', currency))
 })
 
 export default studyToursRoute

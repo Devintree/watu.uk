@@ -12,7 +12,7 @@ import adminApi from './routes/admin-api'
 import contentRoute from './routes/content'
 import paymentRoute from './routes/payment'
 import { getLayout } from './lib/layout'
-import { t } from './lib/i18n'
+import { t, getCurrency } from './lib/i18n'
 
 type Bindings = {
   DB: D1Database
@@ -42,6 +42,7 @@ app.route('/payment', paymentRoute)
 // Contact page
 app.get('/contact', (c) => {
   const lang = (c.req.query('lang') || 'en') as 'zh' | 'en'
+  const currency = getCurrency(c);
   
   return c.html(getLayout(lang, lang === 'zh' ? '联系我们' : 'Contact Us', `
   <section class="gradient-bg py-12 text-white">
@@ -68,7 +69,7 @@ app.get('/contact', (c) => {
                 <div class="font-semibold text-gray-800">${item.value}</div>
               </div>
             </div>
-          `).join('')}
+          `, currency).join('')}
         </div>
       </div>
       <div>
@@ -97,12 +98,13 @@ app.get('/contact', (c) => {
       </div>
     </div>
   </div>
-  `, '/contact'))
+  `, '/contact', currency))
 })
 
 // 404 handler
 app.notFound((c) => {
   const lang = (c.req.query('lang') || 'en') as 'zh' | 'en'
+  const currency = getCurrency(c);
   return c.html(`<!DOCTYPE html>
 <html>
 <head>

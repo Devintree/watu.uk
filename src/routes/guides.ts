@@ -1,5 +1,5 @@
 import { Hono } from 'hono'
-import { Lang, t } from '../lib/i18n'
+import {  Lang, t , getCurrency } from '../lib/i18n'
 import { getLayout, cityBadge, starRating } from '../lib/layout'
 
 type Bindings = { DB: D1Database }
@@ -7,6 +7,7 @@ const guidesRoute = new Hono<{ Bindings: Bindings }>()
 
 guidesRoute.get('/', async (c) => {
   const lang = (c.req.query('lang') || 'en') as Lang
+  const currency = getCurrency(c);
   const city = c.req.query('city') || ''
   const T = (key: any) => t(lang, key)
 
@@ -71,7 +72,7 @@ guidesRoute.get('/', async (c) => {
             </div>
             <div class="flex items-center justify-between pt-3 border-t border-gray-100">
               <div>
-                <span class="font-bold text-amber-700 text-lg">£${g.price_per_day}</span>
+                <span class="font-bold text-amber-700 text-lg">${currency === 'GBP' ? '£' : '¥'}${currency === 'GBP' ? g.price_per_day : g.price_per_day_cny}</span>
                 <span class="text-gray-500 text-sm ml-1">/${T('per_day')}</span>
               </div>
               <a href="/guides/${g.id}?lang=${lang}" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-full text-sm font-semibold transition-colors">
@@ -86,11 +87,12 @@ guidesRoute.get('/', async (c) => {
   </div>
   `
 
-  return c.html(getLayout(lang, T('nav_guides'), content, '/guides'))
+  return c.html(getLayout(lang, T('nav_guides'), content, '/guides', currency))
 })
 
 guidesRoute.get('/:id', async (c) => {
   const lang = (c.req.query('lang') || 'en') as Lang
+  const currency = getCurrency(c);
   const id = c.req.param('id')
   const T = (key: any) => t(lang, key)
 
@@ -169,7 +171,7 @@ guidesRoute.get('/:id', async (c) => {
                     <p class="text-gray-500 text-sm mt-0.5">${pkg.duration_hours}${lang === 'zh' ? '小时' : ' hours'} · ${lang === 'zh' ? '最多' : 'Max'} ${pkg.max_people}${lang === 'zh' ? '人' : ' people'}</p>
                   </div>
                   <div class="text-right">
-                    <span class="font-bold text-amber-700 text-xl">£${pkg.price}</span>
+                    <span class="font-bold text-amber-700 text-xl">${currency === 'GBP' ? '£' : '¥'}${currency === 'GBP' ? pkg.price : pkg.price_cny}</span>
                     <div class="text-xs text-gray-500">${lang === 'zh' ? '/次' : '/tour'}</div>
                   </div>
                 </div>
@@ -193,8 +195,8 @@ guidesRoute.get('/:id', async (c) => {
           <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-4">
             <div class="text-center pb-4 border-b border-gray-100 mb-4">
               <div class="text-sm text-gray-500 mb-1">${lang === 'zh' ? '全天导览' : 'Full Day'}</div>
-              <span class="text-3xl font-bold text-amber-700">£${guide.price_per_day}</span>
-              ${guide.price_per_half_day ? `<div class="text-sm text-gray-500 mt-1">${lang === 'zh' ? '半天' : 'Half Day'}: £${guide.price_per_half_day}</div>` : ''}
+              <span class="text-3xl font-bold text-amber-700">${currency === 'GBP' ? '£' : '¥'}${currency === 'GBP' ? guide.price_per_day : guide.price_per_day_cny}</span>
+              ${guide.price_per_half_day ? `<div class="text-sm text-gray-500 mt-1">${lang === 'zh' ? '半天' : 'Half Day'}: ${currency === 'GBP' ? '£' : '¥'}${currency === 'GBP' ? guide.price_per_half_day : guide.price_per_half_day}</div>` : ''}
             </div>
             <button onclick="openBookingModal(null, '${lang === 'zh' ? guide.name_zh : guide.name_en}', ${guide.price_per_day})"
                     class="w-full bg-amber-500 hover:bg-amber-600 text-white py-3 rounded-xl font-bold transition-colors mb-3">
@@ -271,18 +273,22 @@ guidesRoute.get('/:id', async (c) => {
   </div>
 
   <script>
+        const currency = '${currency}';
   const lang = '${lang}';
+  const currency = getCurrency(c);
   function openBookingModal(pkgId, title, price) {
     document.getElementById('bookingTitle').value = title;
     document.getElementById('bookingAmount').value = price;
     document.getElementById('bookingSummary').innerHTML = lang === 'zh' ? 
-      '<strong>' + title + '</strong><br>价格: £' + price : 
-      '<strong>' + title + '</strong><br>Price: £' + price;
+      '<strong>' + title + '</strong><br>价格: ' + (currency === 'GBP' ? '£' : '¥') + price : 
+      '<strong>' + title + '</strong><br>Price: ' + (currency === 'GBP' ? '£' : '¥') + price;
     document.getElementById('bookingModal').classList.add('active');
   }
   async function submitBooking(e) {
     e.preventDefault();
     const body = Object.fromEntries(new FormData(e.target).entries());
+    body.currency = typeof currency !== 'undefined' ? currency : 'GBP';
+
     const btn = e.target.querySelector('[type="submit"]');
     btn.disabled = true;
     try {
@@ -298,6 +304,8 @@ guidesRoute.get('/:id', async (c) => {
   async function submitInquiry(e) {
     e.preventDefault();
     const body = Object.fromEntries(new FormData(e.target).entries());
+    body.currency = typeof currency !== 'undefined' ? currency : 'GBP';
+
     try {
       await fetch('/api/inquiries', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) });
       document.getElementById('inquiryModal').classList.remove('active');
@@ -308,7 +316,7 @@ guidesRoute.get('/:id', async (c) => {
   </script>
   `
 
-  return c.html(getLayout(lang, lang === 'zh' ? guide.name_zh : guide.name_en, content, '/guides'))
+  return c.html(getLayout(lang, lang === 'zh' ? guide.name_zh : guide.name_en, content, '/guides', currency))
 })
 
 export default guidesRoute

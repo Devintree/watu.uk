@@ -1,5 +1,5 @@
 import { Hono } from 'hono'
-import { Lang, t } from '../lib/i18n'
+import {  Lang, t , getCurrency } from '../lib/i18n'
 import { getLayout, cityBadge } from '../lib/layout'
 
 type Bindings = { DB: D1Database }
@@ -7,6 +7,7 @@ const rentalsRoute = new Hono<{ Bindings: Bindings }>()
 
 rentalsRoute.get('/', async (c) => {
   const lang = (c.req.query('lang') || 'en') as Lang
+  const currency = getCurrency(c);
   const city = c.req.query('city') || ''
   const T = (key: any) => t(lang, key)
 
@@ -94,7 +95,7 @@ rentalsRoute.get('/', async (c) => {
             </div>
             <div class="flex items-center justify-between pt-3 border-t border-gray-100">
               <div>
-                <span class="font-bold text-green-700 text-lg">£${r.price_per_month}</span>
+                <span class="font-bold text-green-700 text-lg">${currency === 'GBP' ? '£' : '¥'}${currency === 'GBP' ? r.price_per_month : r.price_per_month_cny}</span>
                 <span class="text-gray-500 text-sm ml-1">/${T('per_month')}</span>
               </div>
               <a href="/rentals/${r.id}?lang=${lang}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-full text-sm font-semibold transition-colors">
@@ -149,11 +150,15 @@ rentalsRoute.get('/', async (c) => {
   </div>
 
   <script>
+        const currency = '${currency}';
   const lang = '${lang}';
+  const currency = getCurrency(c);
   async function submitCustomRequest(e) {
     e.preventDefault();
     const data = new FormData(e.target);
     const body = Object.fromEntries(data.entries());
+    body.currency = typeof currency !== 'undefined' ? currency : 'GBP';
+
     try {
       await fetch('/api/inquiries', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) });
       document.getElementById('customRequestModal').classList.remove('active');
@@ -164,11 +169,12 @@ rentalsRoute.get('/', async (c) => {
   </script>
   `
 
-  return c.html(getLayout(lang, T('nav_rentals'), content, '/rentals'))
+  return c.html(getLayout(lang, T('nav_rentals'), content, '/rentals', currency))
 })
 
 rentalsRoute.get('/:id', async (c) => {
   const lang = (c.req.query('lang') || 'en') as Lang
+  const currency = getCurrency(c);
   const id = c.req.param('id')
   const T = (key: any) => t(lang, key)
 
@@ -268,7 +274,7 @@ rentalsRoute.get('/:id', async (c) => {
         <div class="sticky top-20">
           <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-4">
             <div class="text-center pb-4 border-b border-gray-100 mb-4">
-              <span class="text-3xl font-bold text-green-700">£${rental.price_per_month}</span>
+              <span class="text-3xl font-bold text-green-700">${currency === 'GBP' ? '£' : '¥'}${currency === 'GBP' ? rental.price_per_month : rental.price_per_month_cny}</span>
               <span class="text-gray-500 ml-1">/${T('per_month')}</span>
               <div class="text-sm text-gray-500 mt-1">${lang === 'zh' ? `押金: ${rental.deposit_months}个月` : `Deposit: ${rental.deposit_months} month(s)`}</div>
             </div>
@@ -306,7 +312,9 @@ rentalsRoute.get('/:id', async (c) => {
     </div>
   </div>
   <script>
+        const currency = '${currency}';
   const lang = '${lang}';
+  const currency = getCurrency(c);
   async function submitInquiry(e) {
     e.preventDefault();
     const body = Object.fromEntries(new FormData(e.target).entries());
@@ -320,7 +328,7 @@ rentalsRoute.get('/:id', async (c) => {
   </script>
   `
 
-  return c.html(getLayout(lang, lang === 'zh' ? rental.title_zh : rental.title_en, content, '/rentals'))
+  return c.html(getLayout(lang, lang === 'zh' ? rental.title_zh : rental.title_en, content, '/rentals', currency))
 })
 
 export default rentalsRoute

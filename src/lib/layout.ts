@@ -1,6 +1,6 @@
 import { Lang, t, TranslationKey } from './i18n'
 
-export function getLayout(lang: Lang, title: string, content: string, currentPath: string = '/'): string {
+export function getLayout(lang: Lang, title: string, content: string, currentPath: string = '/', currency): string {
   const T = (key: TranslationKey) => t(lang, key)
   const otherLang = lang === 'zh' ? 'en' : 'zh'
   
@@ -94,6 +94,16 @@ export function getLayout(lang: Lang, title: string, content: string, currentPat
       
       <!-- Right Actions -->
       <div class="flex items-center space-x-3">
+        
+        <!-- Currency Switch -->
+        <div class="relative group cursor-pointer">
+          <div class="flex items-center space-x-1 px-3 py-1.5 rounded-full border border-gray-200 text-sm font-medium text-gray-600 hover:border-blue-400 hover:text-blue-600 transition-colors" onclick="document.cookie='currency=' + (document.cookie.includes('currency=GBP') || !document.cookie.includes('currency=') ? 'CNY' : 'GBP') + '; path=/; max-age=31536000'; window.location.reload();">
+            <i class="fas fa-pound-sign text-xs" style="display: ${currency === 'GBP' ? 'inline-block' : 'none'}"></i>
+            <i class="fas fa-yen-sign text-xs" style="display: ${currency === 'CNY' ? 'inline-block' : 'none'}"></i>
+            <span>${currency}</span>
+          </div>
+        </div>
+
         <!-- Language Switch -->
         <a href="${currentPath}?lang=${otherLang}" 
            class="flex items-center space-x-1 px-3 py-1.5 rounded-full border border-gray-200 text-sm font-medium text-gray-600 hover:border-blue-400 hover:text-blue-600 transition-colors">

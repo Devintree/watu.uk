@@ -18,7 +18,7 @@ const ALLOWED_TABLES = ['hotels', 'rentals', 'guides', 'study_tours', 'blogs', '
 // Advanced bulk update for calendar inventory
 adminApi.post('/inventory-bulk', async (c) => {
   try {
-    const { room_type_id, start_date, end_date, price, available_count, is_closed } = await c.req.json()
+    const { room_type_id, start_date, end_date, price, price_cny, available_count, is_closed } = await c.req.json()
     
     // Generate all dates in the range
     const dates = []
@@ -32,13 +32,14 @@ adminApi.post('/inventory-bulk', async (c) => {
     // Prepare batched statements using D1's UPSERT equivalent (INSERT OR REPLACE / ON CONFLICT)
     const stmts = dates.map(date => 
       c.env.DB.prepare(`
-        INSERT INTO room_inventory (room_type_id, date, price, available_count, is_closed) 
-        VALUES (?, ?, ?, ?, ?)
+        INSERT INTO room_inventory (room_type_id, date, price, price_cny, available_count, is_closed) 
+        VALUES (?, ?, ?, ?, ?, ?)
         ON CONFLICT(room_type_id, date) DO UPDATE SET 
           price = excluded.price, 
+          price_cny = excluded.price_cny, 
           available_count = excluded.available_count, 
           is_closed = excluded.is_closed
-      `).bind(room_type_id, date, price, available_count, is_closed)
+      `).bind(room_type_id, date, price, price_cny, available_count, is_closed)
     )
     
     await c.env.DB.batch(stmts)

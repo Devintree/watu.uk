@@ -1,5 +1,5 @@
 import { Hono } from 'hono'
-import { Lang, t } from '../lib/i18n'
+import {  Lang, t , getCurrency } from '../lib/i18n'
 import { getLayout } from '../lib/layout'
 
 type Bindings = { DB: D1Database }
@@ -7,6 +7,7 @@ const paymentRoute = new Hono<{ Bindings: Bindings }>()
 
 paymentRoute.get('/success', async (c) => {
   const lang = (c.req.query('lang') || 'en') as Lang
+  const currency = getCurrency(c);
   const orderNo = c.req.query('order') || ''
   const T = (key: any) => t(lang, key)
 
@@ -48,7 +49,7 @@ paymentRoute.get('/success', async (c) => {
         </div>
         <div class="flex justify-between mb-2">
           <span class="text-gray-500">${lang === 'zh' ? '金额' : 'Amount'}</span>
-          <span class="font-bold text-green-700">£${order.amount}</span>
+          <span class="font-bold text-green-700">${order.currency === 'GBP' ? '£' : '¥'}${order.amount}</span>
         </div>
         <div class="flex justify-between">
           <span class="text-gray-500">${lang === 'zh' ? '联系邮箱' : 'Email'}</span>
@@ -80,11 +81,12 @@ paymentRoute.get('/success', async (c) => {
   </div>
   `
 
-  return c.html(getLayout(lang, lang === 'zh' ? '支付成功' : 'Payment Success', content, '/'))
+  return c.html(getLayout(lang, lang === 'zh' ? '支付成功' : 'Payment Success', content, '/', currency))
 })
 
 paymentRoute.get('/cancel', async (c) => {
   const lang = (c.req.query('lang') || 'en') as Lang
+  const currency = getCurrency(c);
   const orderNo = c.req.query('order') || ''
 
   const content = `
@@ -116,7 +118,7 @@ paymentRoute.get('/cancel', async (c) => {
   </div>
   `
 
-  return c.html(getLayout(lang, lang === 'zh' ? '支付取消' : 'Payment Cancelled', content, '/'))
+  return c.html(getLayout(lang, lang === 'zh' ? '支付取消' : 'Payment Cancelled', content, '/', currency))
 })
 
 export default paymentRoute

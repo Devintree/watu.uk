@@ -201,7 +201,7 @@ export const hotelEditTemplate = (id: string) => `
           title_zh: '', title_en: '', star_rating: 4, opening_year: '', room_count: '', ctrip_id: '',
           phone: '', email: '', city: 'london', address: '', latitude: '', longitude: '',
           cover_image: '', images: '[]', description_zh: '', description_en: '',
-          policies_zh: '', policies_en: '', amenities_zh: '', amenities_en: '', is_available: 1, price_per_night: 0, rating: 0, review_count: 0, ctrip_review_content: ''
+          policies_zh: '', policies_en: '', amenities_zh: '', amenities_en: '', is_available: 1, price_per_night: 0, price_per_night_cny: 0, rating: 0, review_count: 0, ctrip_review_content: ''
         },
         qDescZh: null, qDescEn: null, qPolZh: null, qPolEn: null
       }
@@ -364,7 +364,7 @@ export const roomTypeListTemplate = (hotelId: string) => `
           <td class="px-4 py-3 text-gray-600">{{ item.bed_type }}</td>
           <td class="px-4 py-3 text-gray-600">{{ item.room_size_sqm || '-' }}</td>
           <td class="px-4 py-3 text-gray-600">{{ item.max_guests }}</td>
-          <td class="px-4 py-3 font-bold text-blue-600">£{{ item.base_price }}</td>
+          <td class="px-4 py-3 font-bold text-blue-600">£{{ item.base_price }} / ¥{{ item.base_price_cny }}</td>
           <td class="px-4 py-3 flex justify-end gap-2">
             <a :href="'/admin/hotels/${hotelId}/rooms/' + item.id + '/calendar'" class="text-xs bg-amber-50 text-amber-600 px-3 py-1.5 rounded font-medium border border-amber-200 hover:bg-amber-100"><i class="fas fa-calendar-alt mr-1"></i>价格/房态日历</a>
             <button @click="editRoom(item)" class="text-xs bg-gray-100 text-gray-700 px-3 py-1.5 rounded font-medium hover:bg-gray-200">修改</button>
@@ -387,6 +387,7 @@ export const roomTypeListTemplate = (hotelId: string) => `
         <div><label class="block text-sm mb-1">房间面积 (㎡)</label><input type="number" v-model="form.room_size_sqm" class="w-full border rounded p-2"></div>
         <div><label class="block text-sm mb-1">最多入住人数</label><input type="number" v-model="form.max_guests" class="w-full border rounded p-2"></div>
         <div><label class="block text-sm mb-1">默认基础价 (£)*</label><input type="number" v-model="form.base_price" class="w-full border rounded p-2"></div>
+        <div><label class="block text-sm mb-1">默认基础价 (¥)*</label><input type="number" v-model="form.base_price_cny" class="w-full border rounded p-2"></div>
       </div>
       <div class="flex justify-end gap-3 mt-6 border-t pt-4">
         <button @click="showAddModal=false" class="px-4 py-2 bg-gray-100 rounded">取消</button>
@@ -446,7 +447,7 @@ export const priceCalendarTemplate = (roomId: string, hotelId: string) => `
            :class="[day.date ? 'cursor-pointer hover:bg-blue-50 transition-colors' : 'bg-gray-50', day.is_closed ? 'bg-red-50/50' : '']">
         <div v-if="day.date">
           <div class="text-right text-xs text-gray-400 mb-1">{{ new Date(day.date).getDate() }}</div>
-          <div v-if="day.price" class="text-sm font-bold text-blue-600 text-center mt-2">£{{ day.price }}</div>
+          <div v-if="day.price" class="text-sm font-bold text-blue-600 text-center mt-2">£{{ day.price }}<br/>¥{{ day.price_cny }}</div>
           <div v-if="day.price" class="text-xs text-center mt-1" :class="day.available_count>0 ? 'text-green-600':'text-red-500'">余: {{ day.available_count }}</div>
           <div v-if="day.is_closed" class="absolute inset-0 bg-red-100/40 flex items-center justify-center font-bold text-red-500 transform -rotate-12 pointer-events-none text-xs border border-red-200 m-1 rounded">已关房</div>
         </div>
@@ -464,6 +465,7 @@ export const priceCalendarTemplate = (roomId: string, hotelId: string) => `
           <div><label class="block text-sm mb-1">结束日期</label><input type="date" v-model="batch.end_date" class="w-full border rounded p-2"></div>
         </template>
         <div><label class="block text-sm mb-1">价格 (£)</label><input type="number" v-model="batch.price" class="w-full border rounded p-2"></div>
+        <div><label class="block text-sm mb-1">价格 (¥)</label><input type="number" v-model="batch.price_cny" class="w-full border rounded p-2"></div>
         <div><label class="block text-sm mb-1">可售房量</label><input type="number" v-model="batch.available_count" class="w-full border rounded p-2"></div>
         <div class="col-span-2">
           <label class="block text-sm mb-1">开关房状态</label>
@@ -491,7 +493,7 @@ export const priceCalendarTemplate = (roomId: string, hotelId: string) => `
         inventory: [],
         showBatchModal: false,
         singleEditDate: null,
-        batch: { start_date:'', end_date:'', price: 100, available_count: 5, is_closed: 0 }
+        batch: { start_date:'', end_date:'', price: 100, price_cny: 900, available_count: 5, is_closed: 0 }
       } 
     },
     computed: {
@@ -521,7 +523,7 @@ export const priceCalendarTemplate = (roomId: string, hotelId: string) => `
       nextMonth() { this.currentMonth++; if(this.currentMonth>11) { this.currentMonth=0; this.currentYear++; } this.fetchData(); },
       editSingleDay(day) {
         this.singleEditDate = day.date;
-        this.batch = { start_date: day.date, end_date: day.date, price: day.price||0, available_count: day.available_count||0, is_closed: day.is_closed||0 };
+        this.batch = { start_date: day.date, end_date: day.date, price: day.price||0, price_cny: day.price_cny||0, available_count: day.available_count||0, is_closed: day.is_closed||0 };
       },
       closeModal() { this.showBatchModal = false; this.singleEditDate = null; },
       async saveBatch() {

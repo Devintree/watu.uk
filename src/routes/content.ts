@@ -1,5 +1,5 @@
 import { Hono } from 'hono'
-import { getLang, t } from '../lib/i18n'
+import { getLang, getCurrency, t } from '../lib/i18n'
 import { getLayout } from '../lib/layout'
 
 type Bindings = { DB: D1Database }
@@ -10,6 +10,7 @@ const contentRoute = new Hono<{ Bindings: Bindings }>()
 // Info Sharing route
 contentRoute.get('/info', async (c) => {
   const lang = getLang(c)
+  const currency = getCurrency(c);
   const T = (key: any) => t(lang, key)
   
   try {
@@ -64,22 +65,23 @@ contentRoute.get('/info', async (c) => {
       </div>
     </div>
     `
-    return c.html(getLayout(lang, T('nav_info'), content, '/info'))
+    return c.html(getLayout(lang, T('nav_info'), content, '/info', currency))
   } catch (e) {
     console.error('DB error:', e)
-    return c.html(getLayout(lang, 'Error', '<div class="text-center py-20 text-red-500">System Error</div>', '/info'))
+    return c.html(getLayout(lang, 'Error', '<div class="text-center py-20 text-red-500">System Error</div>', '/info', currency))
   }
 })
 
 contentRoute.get('/page/:slug', async (c) => {
   const lang = getLang(c)
+  const currency = getCurrency(c);
   const slug = c.req.param('slug')
   
   try {
     const page = await c.env.DB.prepare('SELECT * FROM pages WHERE slug = ?').bind(slug).first()
     
     if (!page) {
-      return c.html(getLayout(lang, '404 Not Found', '<div class="py-20 text-center text-gray-500">Page not found</div>', '/'), 404)
+      return c.html(getLayout(lang, '404 Not Found', '<div class="py-20 text-center text-gray-500">Page not found</div>', '/', currency), 404)
     }
 
     const title = lang === 'zh' ? page.title_zh : page.title_en
@@ -97,7 +99,7 @@ contentRoute.get('/page/:slug', async (c) => {
       </div>
     </div>
     `
-    return c.html(getLayout(lang, title as string, content, `/page/${slug}`))
+    return c.html(getLayout(lang, title as string, content, `/page/${slug}`, currency))
   } catch (e) {
     console.error(e)
     return c.html('Internal Server Error', 500)
@@ -107,6 +109,7 @@ contentRoute.get('/page/:slug', async (c) => {
 // Blog list
 contentRoute.get('/blogs', async (c) => {
   const lang = getLang(c)
+  const currency = getCurrency(c);
   const T = (key: any) => t(lang, key)
   
   try {
@@ -147,7 +150,7 @@ contentRoute.get('/blogs', async (c) => {
       </div>
     </div>
     `
-    return c.html(getLayout(lang, T('footer_blog'), content, '/blogs'))
+    return c.html(getLayout(lang, T('footer_blog'), content, '/blogs', currency))
   } catch (e) {
     console.error(e)
     return c.html('Internal Server Error', 500)
@@ -157,13 +160,14 @@ contentRoute.get('/blogs', async (c) => {
 // Blog Detail
 contentRoute.get('/blogs/:id', async (c) => {
   const lang = getLang(c)
+  const currency = getCurrency(c);
   const id = c.req.param('id')
   
   try {
     const blog = await c.env.DB.prepare('SELECT * FROM blogs WHERE id = ? AND is_published = 1').bind(id).first()
     
     if (!blog) {
-      return c.html(getLayout(lang, '404 Not Found', '<div class="py-20 text-center text-gray-500">Blog not found</div>', '/blogs'), 404)
+      return c.html(getLayout(lang, '404 Not Found', '<div class="py-20 text-center text-gray-500">Blog not found</div>', '/blogs', currency), 404)
     }
 
     // Increment view count
@@ -208,7 +212,7 @@ contentRoute.get('/blogs/:id', async (c) => {
       </div>
     </div>
     `
-    return c.html(getLayout(lang, title as string, content, blog.category === 'info' ? '/info' : '/blogs'))
+    return c.html(getLayout(lang, title as string, content, blog.category === 'info' ? '/info' : '/blogs', currency))
   } catch (e) {
     console.error(e)
     return c.html('Internal Server Error', 500)

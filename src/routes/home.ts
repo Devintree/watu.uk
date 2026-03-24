@@ -1,5 +1,5 @@
 import { Hono } from 'hono'
-import { Lang, t } from '../lib/i18n'
+import {  Lang, t , getCurrency } from '../lib/i18n'
 import { getLayout, cityBadge, starRating } from '../lib/layout'
 
 type Bindings = {
@@ -10,6 +10,7 @@ const homeRoute = new Hono<{ Bindings: Bindings }>()
 
 homeRoute.get('/', async (c) => {
   const lang = (c.req.query('lang') || 'en') as Lang
+  const currency = getCurrency(c);
   const T = (key: any) => t(lang, key)
 
   // Fetch featured hotels
@@ -27,7 +28,17 @@ homeRoute.get('/', async (c) => {
           (SELECT MIN(ri.price) FROM room_inventory ri JOIN room_types rt ON ri.room_type_id = rt.id WHERE rt.hotel_id = h.id AND ri.date = ? AND ri.is_closed = 0 AND ri.available_count > 0),
           (SELECT MIN(base_price) FROM room_types WHERE hotel_id = h.id AND is_active = 1),
           h.price_per_night
-        ) as dynamic_price
+        ) as dynamic_price,
+        COALESCE(
+          (SELECT MIN(ri.price_cny) FROM room_inventory ri JOIN room_types rt ON ri.room_type_id = rt.id WHERE rt.hotel_id = h.id AND ri.date = ? AND ri.is_closed = 0 AND ri.available_count > 0),
+          (SELECT MIN(base_price_cny) FROM room_types WHERE hotel_id = h.id AND is_active = 1),
+          h.price_per_night_cny
+        ) as dynamic_price_cny,
+        COALESCE(
+          (SELECT MIN(ri.price_cny) FROM room_inventory ri JOIN room_types rt ON ri.room_type_id = rt.id WHERE rt.hotel_id = h.id AND ri.date = ? AND ri.is_closed = 0 AND ri.available_count > 0),
+          (SELECT MIN(base_price_cny) FROM room_types WHERE hotel_id = h.id AND is_active = 1),
+          h.price_per_night_cny
+        ) as dynamic_price_cny
       FROM hotels h 
       WHERE h.is_available = 1 
       ORDER BY h.is_featured DESC, h.sort_order DESC, h.rating DESC LIMIT 3
@@ -217,7 +228,7 @@ homeRoute.get('/', async (c) => {
                 ${cityBadge(hotel.city, lang)}
               </div>
               <div class="absolute top-3 right-3 bg-white/90 rounded-full px-2 py-1 text-xs font-semibold text-blue-700">
-                £${hotel.dynamic_price}/${T('per_night')}
+                ${currency === 'GBP' ? '£' : '¥'}${currency === 'GBP' ? hotel.dynamic_price : hotel.dynamic_price_cny}/${T('per_night')}
               </div>
             </div>
             <div class="p-5">
@@ -230,7 +241,7 @@ homeRoute.get('/', async (c) => {
                 ${amenities.slice(0, 3).map((a: string) => `<span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">${a}</span>`).join('')}
               </div>
               <div class="flex items-center justify-between">
-                <span class="font-bold text-blue-700">£${hotel.dynamic_price}<span class="text-sm text-gray-500 font-normal">/${T('per_night')}</span></span>
+                <span class="font-bold text-blue-700">${currency === 'GBP' ? '£' : '¥'}${currency === 'GBP' ? hotel.dynamic_price : hotel.dynamic_price_cny}<span class="text-sm text-gray-500 font-normal">/${T('per_night')}</span></span>
                 <span class="btn-primary text-white text-xs px-3 py-1.5 rounded-full font-semibold">${T('book_now')}</span>
               </div>
             </div>
@@ -332,7 +343,7 @@ homeRoute.get('/', async (c) => {
               ${specialties.slice(0, 3).map((s: string) => `<span class="text-xs bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full">${s}</span>`).join('')}
             </div>
             <div class="flex items-center justify-between">
-              <span class="font-bold text-blue-700">£${guide.price_per_day}<span class="text-sm text-gray-500 font-normal">/${T('per_day')}</span></span>
+              <span class="font-bold text-blue-700">${currency === 'GBP' ? '£' : '¥'}${currency === 'GBP' ? guide.price_per_day : guide.price_per_day_cny}<span class="text-sm text-gray-500 font-normal">/${T('per_day')}</span></span>
               <span class="btn-primary text-white text-xs px-3 py-1.5 rounded-full font-semibold">${T('guide_book')}</span>
             </div>
           </a>`
@@ -381,7 +392,7 @@ homeRoute.get('/', async (c) => {
                 <span><i class="fas fa-users mr-1"></i>${lang === 'zh' ? '最多' : 'Max'} ${tour.max_people}${lang === 'zh' ? '人' : ' ppl'}</span>
               </div>
               <div class="flex items-center justify-between">
-                <span class="font-bold text-blue-700">£${tour.price_per_person}<span class="text-sm text-gray-500 font-normal">/${T('per_person')}</span></span>
+                <span class="font-bold text-blue-700">${currency === 'GBP' ? '£' : '¥'}${currency === 'GBP' ? tour.price_per_person : tour.price_per_person_cny}<span class="text-sm text-gray-500 font-normal">/${T('per_person')}</span></span>
                 <span class="btn-primary text-white text-xs px-3 py-1.5 rounded-full font-semibold">${T('study_book')}</span>
               </div>
             </div>
@@ -471,6 +482,7 @@ homeRoute.get('/', async (c) => {
     const serviceType = document.querySelector('select:first-of-type').value;
     const city = document.querySelector('select:last-of-type').value;
     const lang = '${lang}';
+  const currency = getCurrency(c);
     
     let url = '/';
     if (serviceType) {
@@ -484,7 +496,7 @@ homeRoute.get('/', async (c) => {
   `
 
   const title = lang === 'zh' ? '首页' : 'Home'
-  return c.html(getLayout(lang, title, content, '/'))
+  return c.html(getLayout(lang, title, content, '/', currency))
 })
 
 export default homeRoute

@@ -267,6 +267,7 @@ const rentalSchema = {
     { key: 'city', label: '城市', type: 'select', options: [{value:'london',label:'伦敦'}, {value:'oxford',label:'牛津'}, {value:'cambridge',label:'剑桥'}, {value:'manchester',label:'曼彻斯特'}, {value:'edinburgh',label:'爱丁堡'}] },
     { key: 'address', label: '详细地址' },
     { key: 'price_per_month', label: '价格/月 (£)', type: 'number' },
+    { key: 'price_per_month_cny', label: '价格/月 (¥)', type: 'number' },
     { key: 'property_type', label: '物业类型', type: 'select', options: [{value:'studio',label:'Studio'},{value:'1bed',label:'一室一厅'},{value:'2bed',label:'两室一厅'},{value:'shared',label:'合租'}] },
     { key: 'bedrooms', label: '卧室数', type: 'number' },
     { key: 'bathrooms', label: '卫浴数', type: 'number' },
@@ -288,6 +289,7 @@ const guideSchema = {
     { key: 'bio_zh', label: '简介(中)', type: 'textarea' },
     { key: 'bio_en', label: '简介(英)', type: 'textarea' },
     { key: 'price_per_day', label: '日均价 (£)', type: 'number' },
+    { key: 'price_per_day_cny', label: '日均价 (¥)', type: 'number' },
     { key: 'experience_years', label: '从业年限', type: 'number' },
     { key: 'avatar', label: '上传头像(JSON数组)', type: 'image' },
     { key: 'sort_order', label: '排序', type: 'number' }
@@ -307,6 +309,7 @@ const tourSchema = {
     { key: 'description_zh', label: '描述(中)', type: 'textarea' },
     { key: 'description_en', label: '描述(英)', type: 'textarea' },
     { key: 'price_per_person', label: '价格/人 (£)', type: 'number' },
+    { key: 'price_per_person_cny', label: '价格/人 (¥)', type: 'number' },
     { key: 'duration_days', label: '行程天数', type: 'number' },
     { key: 'min_age', label: '最小年龄', type: 'number' },
     { key: 'max_age', label: '最大年龄', type: 'number' },

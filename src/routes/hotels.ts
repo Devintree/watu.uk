@@ -1,5 +1,5 @@
 import { Hono } from 'hono'
-import { Lang, t } from '../lib/i18n'
+import {  Lang, t , getCurrency } from '../lib/i18n'
 import { getLayout, cityBadge, starRating, priceDisplay } from '../lib/layout'
 
 type Bindings = { DB: D1Database }
@@ -9,6 +9,7 @@ const hotelsRoute = new Hono<{ Bindings: Bindings }>()
 // Hotels list
 hotelsRoute.get('/', async (c) => {
   const lang = (c.req.query('lang') || 'en') as Lang
+  const currency = getCurrency(c);
   const city = c.req.query('city') || ''
   const T = (key: any) => t(lang, key)
 
@@ -22,7 +23,17 @@ hotelsRoute.get('/', async (c) => {
           (SELECT MIN(ri.price) FROM room_inventory ri JOIN room_types rt ON ri.room_type_id = rt.id WHERE rt.hotel_id = h.id AND ri.date = ? AND ri.is_closed = 0 AND ri.available_count > 0),
           (SELECT MIN(base_price) FROM room_types WHERE hotel_id = h.id AND is_active = 1),
           h.price_per_night
-        ) as dynamic_price
+        ) as dynamic_price,
+        COALESCE(
+          (SELECT MIN(ri.price_cny) FROM room_inventory ri JOIN room_types rt ON ri.room_type_id = rt.id WHERE rt.hotel_id = h.id AND ri.date = ? AND ri.is_closed = 0 AND ri.available_count > 0),
+          (SELECT MIN(base_price_cny) FROM room_types WHERE hotel_id = h.id AND is_active = 1),
+          h.price_per_night_cny
+        ) as dynamic_price_cny,
+        COALESCE(
+          (SELECT MIN(ri.price_cny) FROM room_inventory ri JOIN room_types rt ON ri.room_type_id = rt.id WHERE rt.hotel_id = h.id AND ri.date = ? AND ri.is_closed = 0 AND ri.available_count > 0),
+          (SELECT MIN(base_price_cny) FROM room_types WHERE hotel_id = h.id AND is_active = 1),
+          h.price_per_night_cny
+        ) as dynamic_price_cny
       FROM hotels h 
       WHERE h.is_available = 1
     `;
@@ -101,7 +112,7 @@ hotelsRoute.get('/', async (c) => {
               ${cityBadge(hotel.city, lang)}
             </div>
             <div class="absolute top-3 right-3 bg-white/95 rounded-full px-3 py-1 text-xs font-bold text-blue-700 shadow">
-              £${hotel.dynamic_price}/${T('per_night')}
+              ${currency === 'GBP' ? '£' : '¥'}${currency === 'GBP' ? hotel.dynamic_price : hotel.dynamic_price_cny}/${T('per_night')}
             </div>
           </div>
           <div class="p-5 flex flex-col flex-grow">
@@ -124,7 +135,7 @@ hotelsRoute.get('/', async (c) => {
             </div>
             <div class="flex items-center justify-between pt-4 border-t border-gray-100 mt-auto">
               <div>
-                <span class="font-bold text-blue-700 text-xl">£${hotel.dynamic_price}</span>
+                <span class="font-bold text-blue-700 text-xl">${currency === 'GBP' ? '£' : '¥'}${currency === 'GBP' ? hotel.dynamic_price : hotel.dynamic_price_cny}</span>
                 <span class="text-gray-500 text-sm ml-1">/${T('per_night')}</span>
               </div>
               <span class="btn-primary text-white px-5 py-2 rounded-full text-sm font-semibold shadow-sm group-hover:shadow-md transition-all">
@@ -145,12 +156,13 @@ hotelsRoute.get('/', async (c) => {
   </div>
   `
 
-  return c.html(getLayout(lang, T('nav_hotels'), content, '/hotels'))
+  return c.html(getLayout(lang, T('nav_hotels'), content, '/hotels', currency))
 })
 
 // Hotel detail
 hotelsRoute.get('/:id', async (c) => {
   const lang = (c.req.query('lang') || 'en') as Lang
+  const currency = getCurrency(c);
   const id = c.req.param('id')
   const T = (key: any) => t(lang, key)
 
@@ -165,7 +177,12 @@ hotelsRoute.get('/:id', async (c) => {
           (SELECT MIN(ri.price) FROM room_inventory ri JOIN room_types rt ON ri.room_type_id = rt.id WHERE rt.hotel_id = h.id AND ri.date = ? AND ri.is_closed = 0 AND ri.available_count > 0),
           (SELECT MIN(base_price) FROM room_types WHERE hotel_id = h.id AND is_active = 1),
           h.price_per_night
-        ) as dynamic_price
+        ) as dynamic_price,
+        COALESCE(
+          (SELECT MIN(ri.price_cny) FROM room_inventory ri JOIN room_types rt ON ri.room_type_id = rt.id WHERE rt.hotel_id = h.id AND ri.date = ? AND ri.is_closed = 0 AND ri.available_count > 0),
+          (SELECT MIN(base_price_cny) FROM room_types WHERE hotel_id = h.id AND is_active = 1),
+          h.price_per_night_cny
+        ) as dynamic_price_cny
       FROM hotels h 
       WHERE h.id = ?
     `).bind(today, id).first()
@@ -178,7 +195,7 @@ hotelsRoute.get('/:id', async (c) => {
   }
 
   if (!hotel) {
-    return c.html(getLayout(lang, 'Not Found', '<div class="text-center py-20"><h1 class="text-2xl">Not Found</h1></div>', '/hotels'))
+    return c.html(getLayout(lang, 'Not Found', '<div class="text-center py-20"><h1 class="text-2xl">Not Found</h1></div>', '/hotels', currency))
   }
 
   const images = JSON.parse(hotel.images || '[]')
@@ -268,7 +285,7 @@ hotelsRoute.get('/:id', async (c) => {
                     </div>
                   </div>
                   <div class="mt-4 flex items-center justify-between">
-                    <div class="text-blue-700 font-bold text-xl">£${rt.base_price}<span class="text-sm text-gray-500 font-normal"> /${T('per_night')}${lang==='zh'?'起':' from'}</span></div>
+                    <div class="text-blue-700 font-bold text-xl">${currency === 'GBP' ? '£' : '¥'}${currency === 'GBP' ? rt.base_price : rt.base_price_cny}<span class="text-sm text-gray-500 font-normal"> /${T('per_night')}${lang==='zh'?'起':' from'}</span></div>
                   </div>
                 </div>
               </div>
@@ -347,6 +364,7 @@ hotelsRoute.get('/:id', async (c) => {
 
       <!-- Lightbox functionality -->
       <script>
+        const currency = '${currency}';
         const galleryImages = ${JSON.stringify(images)};
         let currentImgIndex = 0;
         
@@ -398,7 +416,7 @@ hotelsRoute.get('/:id', async (c) => {
         <div class="sticky top-20">
           <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
             <div class="text-center mb-4 pb-4 border-b border-gray-100">
-              <span class="text-3xl font-bold text-blue-700">£${hotel.dynamic_price}</span>
+              <span class="text-3xl font-bold text-blue-700">${currency === 'GBP' ? '£' : '¥'}${currency === 'GBP' ? hotel.dynamic_price : hotel.dynamic_price_cny}</span>
               <span class="text-gray-500 ml-1">/${T('per_night')}</span>
             </div>
             
@@ -576,8 +594,10 @@ hotelsRoute.get('/:id', async (c) => {
   </div>
 
   <script>
-  const pricePerNight = ${hotel.dynamic_price};
+        const currency = '${currency}';
+  const pricePerNight = ${currency === 'GBP' ? hotel.dynamic_price : hotel.dynamic_price_cny};
   const lang = '${lang}';
+  const currency = getCurrency(c);
   
   function changeMainImg(src) {
     document.getElementById('mainImg').src = src;
@@ -629,9 +649,9 @@ hotelsRoute.get('/:id', async (c) => {
       const nights = calcNights(checkIn, checkOut);
       if (nights > 0) {
         const total = nights * pricePerNight;
-        document.getElementById('nightsText').textContent = lang === 'zh' ? nights + ' 晚 × £' + pricePerNight : nights + ' nights × £' + pricePerNight;
-        document.getElementById('nightsTotal').textContent = '£' + total;
-        document.getElementById('grandTotal').textContent = '£' + total;
+        document.getElementById('nightsText').textContent = lang === 'zh' ? nights + ' 晚 × ' + (currency === 'GBP' ? '£' : '¥') + pricePerNight : nights + ' nights × ' + (currency === 'GBP' ? '£' : '¥') + pricePerNight;
+        document.getElementById('nightsTotal').textContent = (currency === 'GBP' ? '£' : '¥') + total;
+        document.getElementById('grandTotal').textContent = (currency === 'GBP' ? '£' : '¥') + total;
         calc.classList.remove('hidden');
       }
     }
@@ -645,8 +665,8 @@ hotelsRoute.get('/:id', async (c) => {
       if (nights > 0) {
         const total = nights * pricePerNight;
         document.getElementById('modalNightsText').textContent = lang === 'zh' ? nights + ' 晚 × £' + pricePerNight : nights + ' nights × £' + pricePerNight;
-        document.getElementById('modalNightsTotal').textContent = '£' + total;
-        document.getElementById('modalGrandTotal').textContent = '£' + total;
+        document.getElementById('modalNightsTotal').textContent = (currency === 'GBP' ? '£' : '¥') + total;
+        document.getElementById('modalGrandTotal').textContent = (currency === 'GBP' ? '£' : '¥') + total;
       }
     }
   }
@@ -660,6 +680,7 @@ hotelsRoute.get('/:id', async (c) => {
     // Calculate total
     const nights = calcNights(body.checkIn, body.checkOut);
     body.amount = (nights * pricePerNight).toString();
+    body.currency = typeof currency !== 'undefined' ? currency : 'GBP';
     body.guests = document.getElementById('guests')?.value || '1';
     
     const btn = form.querySelector('[type="submit"]');
@@ -725,7 +746,7 @@ hotelsRoute.get('/:id', async (c) => {
   </script>
   `
 
-  return c.html(getLayout(lang, lang === 'zh' ? hotel.title_zh : hotel.title_en, content, '/hotels'))
+  return c.html(getLayout(lang, lang === 'zh' ? hotel.title_zh : hotel.title_en, content, '/hotels', currency))
 })
 
 export default hotelsRoute

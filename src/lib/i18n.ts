@@ -318,3 +318,10 @@ export function getLang(c: any): Lang {
   const lang = langQuery || langCookie || 'en'
   return (lang === 'en' ? 'en' : 'zh') as Lang
 }
+
+export function getCurrency(c: any): 'GBP' | 'CNY' {
+  const currencyCookie = c.req.raw?.headers?.get('cookie')?.match(/currency=([^;]+)/)?.[1]
+  const currencyQuery = c.req.query?.('currency')
+  const currency = (currencyQuery || currencyCookie || 'GBP').toUpperCase()
+  return (currency === 'CNY' ? 'CNY' : 'GBP') as 'GBP' | 'CNY'
+}
