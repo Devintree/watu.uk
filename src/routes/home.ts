@@ -22,7 +22,7 @@ homeRoute.get('/', async (c) => {
   try {
     const today = new Date().toISOString().split('T')[0];
     const hotelsResult = await c.env.DB.prepare(`
-      SELECT 
+            SELECT 
         h.*,
         COALESCE(
           (SELECT MIN(ri.price) FROM room_inventory ri JOIN room_types rt ON ri.room_type_id = rt.id WHERE rt.hotel_id = h.id AND ri.date = ? AND ri.is_closed = 0 AND ri.available_count > 0),
@@ -33,31 +33,30 @@ homeRoute.get('/', async (c) => {
           (SELECT MIN(ri.price_cny) FROM room_inventory ri JOIN room_types rt ON ri.room_type_id = rt.id WHERE rt.hotel_id = h.id AND ri.date = ? AND ri.is_closed = 0 AND ri.available_count > 0),
           (SELECT MIN(base_price_cny) FROM room_types WHERE hotel_id = h.id AND is_active = 1),
           h.price_per_night_cny
-        ) as dynamic_price_cny,
-        COALESCE(
-          (SELECT MIN(ri.price_cny) FROM room_inventory ri JOIN room_types rt ON ri.room_type_id = rt.id WHERE rt.hotel_id = h.id AND ri.date = ? AND ri.is_closed = 0 AND ri.available_count > 0),
-          (SELECT MIN(base_price_cny) FROM room_types WHERE hotel_id = h.id AND is_active = 1),
-          h.price_per_night_cny
         ) as dynamic_price_cny
       FROM hotels h 
-      WHERE h.is_available = 1 
-      ORDER BY h.is_featured DESC, h.sort_order DESC, h.rating DESC LIMIT 3
-    `).bind(today).all()
-    featuredHotels = hotelsResult.results || []
-    
-    const guidesResult = await c.env.DB.prepare(
-      'SELECT * FROM guides WHERE is_available = 1 ORDER BY rating DESC LIMIT 3'
+      WHERE h.is_available = 1 AND h.is_featured = 1
+      ORDER BY h.sort_order DESC, h.rating DESC
+      LIMIT 4`).bind(today, today).all()
+    hotels = hotelResult.results || []
+
+    // Fetch guides
+    const guideResult = await c.env.DB.prepare(
+      "SELECT * FROM guides WHERE is_featured = 1 ORDER BY sort_order DESC LIMIT 4"
     ).all()
-    featuredGuides = guidesResult.results || []
-    
-    const toursResult = await c.env.DB.prepare(
-      'SELECT * FROM study_tours WHERE is_active = 1 ORDER BY created_at DESC LIMIT 3'
+    guides = guideResult.results || []
+
+    // Fetch study tours
+    const tourResult = await c.env.DB.prepare(
+      "SELECT * FROM study_tours WHERE is_featured = 1 ORDER BY sort_order DESC LIMIT 4"
     ).all()
-    featuredStudyTours = toursResult.results || []
-    
+    studyTours = tourResult.results || []
+
+    // Fetch info sharing
     const infoResult = await c.env.DB.prepare(
       "SELECT * FROM blogs WHERE is_published = 1 AND category = 'info' ORDER BY sort_order DESC, created_at DESC LIMIT 4"
     ).all()
+    
     featuredInfoBlogs = infoResult.results || []
 
   } catch (e) {

@@ -17,18 +17,13 @@ hotelsRoute.get('/', async (c) => {
   try {
     const today = new Date().toISOString().split('T')[0];
     const baseQuery = `
-      SELECT 
+            SELECT 
         h.*,
         COALESCE(
           (SELECT MIN(ri.price) FROM room_inventory ri JOIN room_types rt ON ri.room_type_id = rt.id WHERE rt.hotel_id = h.id AND ri.date = ? AND ri.is_closed = 0 AND ri.available_count > 0),
           (SELECT MIN(base_price) FROM room_types WHERE hotel_id = h.id AND is_active = 1),
           h.price_per_night
         ) as dynamic_price,
-        COALESCE(
-          (SELECT MIN(ri.price_cny) FROM room_inventory ri JOIN room_types rt ON ri.room_type_id = rt.id WHERE rt.hotel_id = h.id AND ri.date = ? AND ri.is_closed = 0 AND ri.available_count > 0),
-          (SELECT MIN(base_price_cny) FROM room_types WHERE hotel_id = h.id AND is_active = 1),
-          h.price_per_night_cny
-        ) as dynamic_price_cny,
         COALESCE(
           (SELECT MIN(ri.price_cny) FROM room_inventory ri JOIN room_types rt ON ri.room_type_id = rt.id WHERE rt.hotel_id = h.id AND ri.date = ? AND ri.is_closed = 0 AND ri.available_count > 0),
           (SELECT MIN(base_price_cny) FROM room_types WHERE hotel_id = h.id AND is_active = 1),
@@ -42,8 +37,8 @@ hotelsRoute.get('/', async (c) => {
       : baseQuery + ' ORDER BY h.is_featured DESC, h.sort_order DESC, h.rating DESC'
     
     const result = city 
-      ? await c.env.DB.prepare(query).bind(today, city).all()
-      : await c.env.DB.prepare(query).bind(today).all()
+      ? await c.env.DB.prepare(query).bind(today, today, city).all()
+      : await c.env.DB.prepare(query).bind(today, today).all()
     hotels = result.results || []
   } catch (e) {
     console.error('DB error:', e)
@@ -185,7 +180,7 @@ hotelsRoute.get('/:id', async (c) => {
         ) as dynamic_price_cny
       FROM hotels h 
       WHERE h.id = ?
-    `).bind(today, id).first()
+    `).bind(today, today, id).first()
     const reviewsResult = await c.env.DB.prepare(
       'SELECT * FROM reviews WHERE service_type = ? AND service_id = ? AND is_approved = 1 ORDER BY created_at DESC'
     ).bind('hotel', id).all()
