@@ -592,7 +592,6 @@ hotelsRoute.get('/:id', async (c) => {
         const currency = '${currency}';
   const pricePerNight = ${currency === 'GBP' ? hotel.dynamic_price : hotel.dynamic_price_cny};
   const lang = '${lang}';
-  const currency = getCurrency(c);
   
   function changeMainImg(src) {
     document.getElementById('mainImg').src = src;

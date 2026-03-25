@@ -152,7 +152,6 @@ rentalsRoute.get('/', async (c) => {
   <script>
         const currency = '${currency}';
   const lang = '${lang}';
-  const currency = getCurrency(c);
   async function submitCustomRequest(e) {
     e.preventDefault();
     const data = new FormData(e.target);
@@ -314,7 +313,6 @@ rentalsRoute.get('/:id', async (c) => {
   <script>
         const currency = '${currency}';
   const lang = '${lang}';
-  const currency = getCurrency(c);
   async function submitInquiry(e) {
     e.preventDefault();
     const body = Object.fromEntries(new FormData(e.target).entries());

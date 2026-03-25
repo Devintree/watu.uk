@@ -275,7 +275,6 @@ guidesRoute.get('/:id', async (c) => {
   <script>
         const currency = '${currency}';
   const lang = '${lang}';
-  const currency = getCurrency(c);
   function openBookingModal(pkgId, title, price) {
     document.getElementById('bookingTitle').value = title;
     document.getElementById('bookingAmount').value = price;

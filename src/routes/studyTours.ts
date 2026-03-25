@@ -143,7 +143,6 @@ studyToursRoute.get('/', async (c) => {
   <script>
         const currency = '${currency}';
   const lang = '${lang}';
-  const currency = getCurrency(c);
   async function submitCustom(e) {
     e.preventDefault();
     const body = Object.fromEntries(new FormData(e.target).entries());
@@ -387,7 +386,6 @@ studyToursRoute.get('/:id', async (c) => {
   <script>
         const currency = '${currency}';
   const lang = '${lang}';
-  const currency = getCurrency(c);
   const pricePerPerson = ${currency === 'GBP' ? tour.price_per_person : tour.price_per_person_cny};
   function updateTotal(n) {
     const total = n * pricePerPerson;

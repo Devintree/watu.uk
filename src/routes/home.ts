@@ -481,7 +481,6 @@ homeRoute.get('/', async (c) => {
     const serviceType = document.querySelector('select:first-of-type').value;
     const city = document.querySelector('select:last-of-type').value;
     const lang = '${lang}';
-  const currency = getCurrency(c);
     
     let url = '/';
     if (serviceType) {
