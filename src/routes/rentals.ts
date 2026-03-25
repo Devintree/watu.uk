@@ -6,7 +6,7 @@ type Bindings = { DB: D1Database }
 const rentalsRoute = new Hono<{ Bindings: Bindings }>()
 
 rentalsRoute.get('/', async (c) => {
-  const lang = (c.req.query('lang') || 'en') as Lang
+  var lang = (c.req.query('lang') || 'en') as Lang
   const currency = getCurrency(c);
   const city = c.req.query('city') || ''
   const T = (key: any) => t(lang, key)
@@ -150,8 +150,8 @@ rentalsRoute.get('/', async (c) => {
   </div>
 
   <script>
-        const currency = '${currency}';
-  const lang = '${lang}';
+        var currency = '${currency}';
+  var lang = '${lang}';
   async function submitCustomRequest(e) {
     e.preventDefault();
     const data = new FormData(e.target);
@@ -172,7 +172,7 @@ rentalsRoute.get('/', async (c) => {
 })
 
 rentalsRoute.get('/:id', async (c) => {
-  const lang = (c.req.query('lang') || 'en') as Lang
+  var lang = (c.req.query('lang') || 'en') as Lang
   const currency = getCurrency(c);
   const id = c.req.param('id')
   const T = (key: any) => t(lang, key)
@@ -311,8 +311,8 @@ rentalsRoute.get('/:id', async (c) => {
     </div>
   </div>
   <script>
-        const currency = '${currency}';
-  const lang = '${lang}';
+        var currency = '${currency}';
+  var lang = '${lang}';
   async function submitInquiry(e) {
     e.preventDefault();
     const body = Object.fromEntries(new FormData(e.target).entries());

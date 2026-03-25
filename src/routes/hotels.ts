@@ -8,7 +8,7 @@ const hotelsRoute = new Hono<{ Bindings: Bindings }>()
 
 // Hotels list
 hotelsRoute.get('/', async (c) => {
-  const lang = (c.req.query('lang') || 'en') as Lang
+  var lang = (c.req.query('lang') || 'en') as Lang
   const currency = getCurrency(c);
   const city = c.req.query('city') || ''
   const T = (key: any) => t(lang, key)
@@ -156,7 +156,7 @@ hotelsRoute.get('/', async (c) => {
 
 // Hotel detail
 hotelsRoute.get('/:id', async (c) => {
-  const lang = (c.req.query('lang') || 'en') as Lang
+  var lang = (c.req.query('lang') || 'en') as Lang
   const currency = getCurrency(c);
   const id = c.req.param('id')
   const T = (key: any) => t(lang, key)
@@ -359,7 +359,7 @@ hotelsRoute.get('/:id', async (c) => {
 
       <!-- Lightbox functionality -->
       <script>
-        const currency = '${currency}';
+        var currency = '${currency}';
         const galleryImages = ${JSON.stringify(images)};
         let currentImgIndex = 0;
         
@@ -589,9 +589,9 @@ hotelsRoute.get('/:id', async (c) => {
   </div>
 
   <script>
-        const currency = '${currency}';
-  const pricePerNight = ${currency === 'GBP' ? hotel.dynamic_price : hotel.dynamic_price_cny};
-  const lang = '${lang}';
+        var currency = '${currency}';
+  var pricePerNight = ${currency === 'GBP' ? hotel.dynamic_price : hotel.dynamic_price_cny};
+  var lang = '${lang}';
   
   function changeMainImg(src) {
     document.getElementById('mainImg').src = src;

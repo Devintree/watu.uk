@@ -6,7 +6,7 @@ type Bindings = { DB: D1Database }
 const studyToursRoute = new Hono<{ Bindings: Bindings }>()
 
 studyToursRoute.get('/', async (c) => {
-  const lang = (c.req.query('lang') || 'en') as Lang
+  var lang = (c.req.query('lang') || 'en') as Lang
   const currency = getCurrency(c);
   const T = (key: any) => t(lang, key)
 
@@ -141,8 +141,8 @@ studyToursRoute.get('/', async (c) => {
   </div>
 
   <script>
-        const currency = '${currency}';
-  const lang = '${lang}';
+        var currency = '${currency}';
+  var lang = '${lang}';
   async function submitCustom(e) {
     e.preventDefault();
     const body = Object.fromEntries(new FormData(e.target).entries());
@@ -162,7 +162,7 @@ studyToursRoute.get('/', async (c) => {
 })
 
 studyToursRoute.get('/:id', async (c) => {
-  const lang = (c.req.query('lang') || 'en') as Lang
+  var lang = (c.req.query('lang') || 'en') as Lang
   const currency = getCurrency(c);
   const id = c.req.param('id')
   const T = (key: any) => t(lang, key)
@@ -384,9 +384,9 @@ studyToursRoute.get('/:id', async (c) => {
   </div>
 
   <script>
-        const currency = '${currency}';
-  const lang = '${lang}';
-  const pricePerPerson = ${currency === 'GBP' ? tour.price_per_person : tour.price_per_person_cny};
+        var currency = '${currency}';
+  var lang = '${lang}';
+  var pricePerPerson = ${currency === 'GBP' ? tour.price_per_person : tour.price_per_person_cny};
   function updateTotal(n) {
     const total = n * pricePerPerson;
     document.getElementById('totalDisplay').textContent = (currency === 'GBP' ? '£' : '¥') + total;

@@ -6,7 +6,7 @@ type Bindings = { DB: D1Database }
 const guidesRoute = new Hono<{ Bindings: Bindings }>()
 
 guidesRoute.get('/', async (c) => {
-  const lang = (c.req.query('lang') || 'en') as Lang
+  var lang = (c.req.query('lang') || 'en') as Lang
   const currency = getCurrency(c);
   const city = c.req.query('city') || ''
   const T = (key: any) => t(lang, key)
@@ -91,7 +91,7 @@ guidesRoute.get('/', async (c) => {
 })
 
 guidesRoute.get('/:id', async (c) => {
-  const lang = (c.req.query('lang') || 'en') as Lang
+  var lang = (c.req.query('lang') || 'en') as Lang
   const currency = getCurrency(c);
   const id = c.req.param('id')
   const T = (key: any) => t(lang, key)
@@ -273,8 +273,8 @@ guidesRoute.get('/:id', async (c) => {
   </div>
 
   <script>
-        const currency = '${currency}';
-  const lang = '${lang}';
+        var currency = '${currency}';
+  var lang = '${lang}';
   function openBookingModal(pkgId, title, price) {
     document.getElementById('bookingTitle').value = title;
     document.getElementById('bookingAmount').value = price;
