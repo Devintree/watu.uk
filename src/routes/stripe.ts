@@ -1,4 +1,5 @@
-import { Hono } from 'hono';
+import { Hono } from 'hono'
+import { sendEmail } from '../lib/email';
 import Stripe from 'stripe';
 
 export const stripeRoute = new Hono<{
@@ -100,6 +101,23 @@ stripeRoute.post('/webhook', async (c) => {
         WHERE order_no = ?
       `).bind(payment_intent, order_no).run();
     }
+      // Send email
+      try {
+        const order: any = await c.env.DB.prepare('SELECT * FROM orders WHERE order_no = ?').bind(order_no).first();
+        if (order && order.user_email) {
+          const html = `<div style="font-family: sans-serif; padding: 20px;">
+            <h2>Payment Successful / 支付成功</h2>
+            <p>Dear ${order.user_name},</p>
+            <p>Your payment for order <strong>${order.order_no}</strong> has been received successfully.</p>
+            <p>您好 ${order.user_name}，</p>
+            <p>您的订单 (<strong>${order.order_no}</strong>) 已成功付款。</p>
+          </div>`;
+          await sendEmail(c.env.DB, order.user_email, 'Payment Successful / 支付成功', html);
+        }
+      } catch (e) {
+        console.error('Email failed', e);
+      }
+
   }
 
   // 处理退款成功
@@ -114,6 +132,23 @@ stripeRoute.post('/webhook', async (c) => {
         WHERE stripe_payment_intent = ?
       `).bind(payment_intent).run();
     }
+      // Send email
+      try {
+        const order: any = await c.env.DB.prepare('SELECT * FROM orders WHERE stripe_payment_intent = ?').bind(payment_intent).first();
+        if (order && order.user_email) {
+          const html = `<div style="font-family: sans-serif; padding: 20px;">
+            <h2>Order Refunded / 订单已退款</h2>
+            <p>Dear ${order.user_name},</p>
+            <p>Your order <strong>${order.order_no}</strong> has been refunded.</p>
+            <p>您好 ${order.user_name}，</p>
+            <p>您的订单 (<strong>${order.order_no}</strong>) 已成功退款。</p>
+          </div>`;
+          await sendEmail(c.env.DB, order.user_email, 'Order Refunded / 订单已退款', html);
+        }
+      } catch (e) {
+        console.error('Email failed', e);
+      }
+
   }
 
   return c.json({ received: true });

@@ -7,6 +7,8 @@ import rentalsRoute from './routes/rentals'
 import guidesRoute from './routes/guides'
 import studyToursRoute from './routes/studyTours'
 import apiRoute from './routes/api'
+import { authRoute } from './routes/auth'
+import { userRoute } from './routes/user'
 import adminRoute from './routes/admin'
 import adminApi from './routes/admin-api'
 import contentRoute from './routes/content'
@@ -33,6 +35,8 @@ app.route('/rentals', rentalsRoute)
 app.route('/guides', guidesRoute)
 app.route('/study-tours', studyToursRoute)
 app.route('/api', apiRoute)
+app.route('/api/auth', authRoute)
+app.route('/user', userRoute)
 app.route('/admin/api', adminApi)
 app.route('/api/stripe', stripeRoute)
 app.route('/', contentRoute)

@@ -95,6 +95,33 @@ export function getLayout(lang: Lang, title: string, content: string, currentPat
       <!-- Right Actions -->
       <div class="flex items-center space-x-3">
         
+        
+        <!-- Auth -->
+        <div id="auth-not-logged-in" class="flex items-center">
+          <button onclick="showLoginModal()" class="flex items-center space-x-1 px-3 py-1.5 rounded-full text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors">
+            <i class="far fa-user"></i>
+            <span class="hidden sm:inline">${lang === 'zh' ? '登录' : 'Login'}</span>
+          </button>
+        </div>
+        
+        <div id="auth-logged-in" class="hidden relative group cursor-pointer">
+          <div class="flex items-center space-x-1 px-3 py-1.5 rounded-full text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors">
+            <i class="fas fa-user-circle text-[#d4af37]"></i>
+            <span id="user-name-display" class="hidden sm:inline max-w-[80px] truncate">User</span>
+            <i class="fas fa-chevron-down text-[10px] ml-1"></i>
+          </div>
+          <!-- Dropdown -->
+          <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 hidden group-hover:block border border-gray-100">
+            <a href="/user/orders?lang=${lang}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-[#d4af37]">
+              <i class="fas fa-box-open w-5"></i> ${lang === 'zh' ? '我的订单' : 'My Orders'}
+            </a>
+            <div class="border-t border-gray-100"></div>
+            <a href="#" onclick="doLogout()" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+              <i class="fas fa-sign-out-alt w-5"></i> ${lang === 'zh' ? '退出登录' : 'Logout'}
+            </a>
+          </div>
+        </div>
+
         <!-- Currency Switch -->
         <div class="relative group cursor-pointer">
           <div class="flex items-center space-x-1 px-3 py-1.5 rounded-full border border-gray-200 text-sm font-medium text-gray-600 hover:border-blue-400 hover:text-blue-600 transition-colors" onclick="document.cookie='currency=' + (document.cookie.includes('currency=GBP') || !document.cookie.includes('currency=') ? 'CNY' : 'GBP') + '; path=/; max-age=31536000'; window.location.reload();">
@@ -243,6 +270,142 @@ document.addEventListener('click', function(e) {
   }
 });
 </script>
+
+<!-- Auth Logic -->
+<script>
+  let currentUser = null;
+  
+  async function checkAuth() {
+    try {
+      const res = await fetch('/api/auth/me');
+      const data = await res.json();
+      if (data.success && data.user) {
+        currentUser = data.user;
+        document.getElementById('auth-not-logged-in').classList.add('hidden');
+        document.getElementById('auth-logged-in').classList.remove('hidden');
+        document.getElementById('user-name-display').innerText = currentUser.name || currentUser.email;
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  function showLoginModal() {
+    document.getElementById('login-modal').classList.remove('hidden');
+  }
+
+  function hideLoginModal() {
+    document.getElementById('login-modal').classList.add('hidden');
+  }
+  
+  async function sendCode() {
+    const email = document.getElementById('login-email').value;
+    if (!email) return alert('Plese enter email / 请输入邮箱');
+    
+    document.getElementById('btn-send-code').disabled = true;
+    document.getElementById('btn-send-code').innerText = 'Sending... / 发送中...';
+    
+    try {
+      const res = await fetch('/api/auth/send-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert('Code sent / 验证码已发送');
+        document.getElementById('code-container').classList.remove('hidden');
+      } else {
+        alert(data.error || 'Failed to send code');
+      }
+    } catch (e) {
+      alert('Error');
+    } finally {
+      document.getElementById('btn-send-code').innerText = 'Get Code / 获取验证码';
+      document.getElementById('btn-send-code').disabled = false;
+    }
+  }
+  
+  async function doLogin() {
+    const email = document.getElementById('login-email').value;
+    const code = document.getElementById('login-code').value;
+    if (!email || !code) return alert('Please enter email and code / 请输入邮箱和验证码');
+    
+    document.getElementById('btn-login').disabled = true;
+    
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, code })
+      });
+      const data = await res.json();
+      if (data.success) {
+        hideLoginModal();
+        window.location.reload();
+      } else {
+        alert(data.error || 'Login failed');
+      }
+    } catch (e) {
+      alert('Error');
+    } finally {
+      document.getElementById('btn-login').disabled = false;
+    }
+  }
+
+  async function doLogout() {
+    if(!confirm('Are you sure to logout? / 确定要退出吗？')) return;
+    await fetch('/api/auth/logout', { method: 'POST' });
+    window.location.reload();
+  }
+  
+  document.addEventListener('DOMContentLoaded', () => {
+    checkAuth();
+    if(window.location.search.includes('login=1')) {
+      showLoginModal();
+    }
+  });
+</script>
+
+<!-- Login Modal -->
+<div id="login-modal" class="fixed inset-0 z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+  <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:p-0">
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="hideLoginModal()"></div>
+    <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+      <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+        <div class="sm:flex sm:items-start">
+          <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+            <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+              Login / Register
+            </h3>
+            <div class="mt-4 space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Email / 邮箱</label>
+                <input type="email" id="login-email" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#d4af37] focus:border-[#d4af37] sm:text-sm">
+              </div>
+              <div id="code-container" class="hidden">
+                <label class="block text-sm font-medium text-gray-700">Code / 验证码</label>
+                <input type="text" id="login-code" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#d4af37] focus:border-[#d4af37] sm:text-sm">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+        <button type="button" id="btn-login" onclick="doLogin()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-[#d4af37] text-base font-medium text-white hover:bg-[#b08d2c] focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">
+          Login / 登录
+        </button>
+        <button type="button" id="btn-send-code" onclick="sendCode()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+          Get Code / 获取验证码
+        </button>
+        <button type="button" onclick="hideLoginModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+          Cancel / 取消
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>`
 }

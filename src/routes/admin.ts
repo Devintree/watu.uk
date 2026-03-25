@@ -103,7 +103,8 @@ function adminLayout(title: string, content: string, activeMenu: string = ''): s
     {href: '/admin/guides', icon: '🗺️', label: '导游管理', key: 'guides'},
     {href: '/admin/study-tours', icon: '🎓', label: '游学管理', key: 'study_tours'},
     {href: '/admin/blogs', icon: '📝', label: '博客管理', key: 'blogs'},
-    {href: '/admin/pages', icon: '📄', label: '单页管理', key: 'pages'}
+    {href: '/admin/pages', icon: '📄', label: '单页管理', key: 'pages'},
+    {href: '/admin/settings', icon: '⚙️', label: '系统设置', key: 'settings'}
   ]
   
   return `<!DOCTYPE html>
