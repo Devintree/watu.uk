@@ -64,7 +64,7 @@ apiRoute.post('/orders', async (c) => {
     const stripeKey = c.env.STRIPE_SECRET_KEY
     if (stripeKey && stripeKey.startsWith('sk_')) {
       try {
-        const siteUrl = c.env.SITE_URL || 'http://localhost:3000'
+        const siteUrl = c.env.SITE_URL || new URL(c.req.url).origin
         
         // Service type display names
         const serviceNames: Record<string, string> = {
@@ -75,7 +75,10 @@ apiRoute.post('/orders', async (c) => {
         }
 
         const stripeBody = new URLSearchParams({
-          'payment_method_types[]': 'card',
+          'payment_method_types[0]': 'card',
+          'payment_method_types[1]': 'alipay',
+          'payment_method_types[2]': 'wechat_pay',
+          'payment_method_options[wechat_pay][client]': 'web',
           'line_items[0][price_data][currency]': currency.toLowerCase(),
           'line_items[0][price_data][product_data][name]': serviceTitle || serviceNames[serviceType] || 'Service',
           'line_items[0][price_data][product_data][description]': `${lang === 'zh' ? '订单号' : 'Order'}: ${orderNo}`,
