@@ -134,68 +134,6 @@ apiRoute.post('/orders', async (c) => {
 // ============================
 // Stripe Webhook
 // ============================
-apiRoute.post('/webhooks/stripe', async (c) => {
-  try {
-    const body = await c.req.text()
-    const signature = c.req.header('stripe-signature') || ''
-
-    // In production, verify signature with Stripe webhook secret
-    // For simplicity, we'll trust the payload
-    const event = JSON.parse(body)
-
-    if (event.type === 'checkout.session.completed') {
-      const session = event.data.object
-      const orderNo = session.metadata?.order_no
-
-      if (orderNo) {
-        await c.env.DB.prepare(`
-          UPDATE orders SET 
-            status = 'confirmed', 
-            payment_status = 'paid', 
-            paid_at = CURRENT_TIMESTAMP,
-            stripe_payment_intent = ?
-          WHERE order_no = ?
-        `).bind(session.payment_intent, orderNo).run()
-      }
-    }
-
-    return c.json({ received: true })
-  } catch (err) {
-    console.error('Webhook error:', err)
-    return c.json({ error: 'Webhook failed' }, 400)
-  }
-})
-
-// ============================
-// Create Inquiry
-// ============================
-apiRoute.post('/inquiries', async (c) => {
-  try {
-    const body = await c.req.json()
-    const { name, email, phone, wechat, serviceType, serviceId, message } = body
-
-    if (!name || !email || !message) {
-      return c.json({ error: 'Missing required fields', success: false }, 400)
-    }
-
-    await c.env.DB.prepare(`
-      INSERT INTO inquiries (name, email, phone, wechat, service_type, service_id, message)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
-    `).bind(
-      name, email, phone || null, wechat || null,
-      serviceType || 'general', serviceId ? parseInt(serviceId) : null,
-      message
-    ).run()
-
-    return c.json({ success: true })
-  } catch (err: any) {
-    return c.json({ error: err.message, success: false }, 500)
-  }
-})
-
-// ============================
-// Get Order Status
-// ============================
 apiRoute.get('/orders/:orderNo', async (c) => {
   try {
     const orderNo = c.req.param('orderNo')
