@@ -38,19 +38,19 @@ homeRoute.get('/', async (c) => {
       WHERE h.is_available = 1 AND h.is_featured = 1
       ORDER BY h.sort_order DESC, h.rating DESC
       LIMIT 4`).bind(today, today).all()
-    hotels = hotelResult.results || []
+    featuredHotels = hotelsResult.results || []
 
     // Fetch guides
     const guideResult = await c.env.DB.prepare(
       "SELECT * FROM guides WHERE is_featured = 1 ORDER BY sort_order DESC LIMIT 4"
     ).all()
-    guides = guideResult.results || []
+    featuredGuides = guideResult.results || []
 
     // Fetch study tours
     const tourResult = await c.env.DB.prepare(
       "SELECT * FROM study_tours WHERE is_featured = 1 ORDER BY sort_order DESC LIMIT 4"
     ).all()
-    studyTours = tourResult.results || []
+    featuredStudyTours = tourResult.results || []
 
     // Fetch info sharing
     const infoResult = await c.env.DB.prepare(
