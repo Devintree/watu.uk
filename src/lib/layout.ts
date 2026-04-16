@@ -277,7 +277,7 @@ document.addEventListener('click', function(e) {
   
   async function checkAuth() {
     try {
-      const res = await fetch('/api/auth/me');
+      const res = await fetch('/api/auth/me', { cache: 'no-store' });
       const data = await res.json();
       if (data.success && data.user) {
         currentUser = data.user;
